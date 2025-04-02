@@ -1,4 +1,7 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
-
-export default nextConfig;
+const nextConfig = {
+    devIndicators: false, // This disables the Next.js dev tools UI
+  };
+  
+  export default nextConfig;
+  
