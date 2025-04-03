@@ -128,7 +128,8 @@ export default function Home() {
               <th style={{ border: "1px solid #ddd", padding: "10px" }}>Title</th>
               <th style={{ border: "1px solid #ddd", padding: "10px" }}>Price</th>
               <th style={{ border: "1px solid #ddd", padding: "10px" }}>Category</th>
-            </tr>
+              <th style={{ border: "1px solid #ddd", padding: "10px" }}>Action</th>
+              </tr>
           </thead>
           <tbody>
             {displayedProducts.map((product) => (
@@ -139,6 +140,9 @@ export default function Home() {
                 <td style={{ border: "1px solid #ddd", padding: "10px" }}>{product.title}</td>
                 <td style={{ border: "1px solid #ddd", padding: "10px" }}>${product.price.toFixed(2)}</td>
                 <td style={{ border: "1px solid #ddd", padding: "10px" }}>{product.category}</td>
+                <td style={{ border: "1px solid #ddd", padding: "10px" }}>
+                  <button onClick={() => router.push(`/product/${product.id}`)}>View More</button>
+                </td>
               </tr>
             ))}
           </tbody>
