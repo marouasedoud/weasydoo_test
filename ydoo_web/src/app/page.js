@@ -8,51 +8,84 @@ export default function Home() {
   const { token, username, logout } = useContext(AuthContext);
   const router = useRouter();
 
-  const [products, setProducts] = useState([]); // Stores all fetched products
+  const [products, setProducts] = useState([]);
   const [page, setPage] = useState(1);
-  const limit = 5; // Fixed limit per page
+  const limit = 5;
+  const totalPages = Math.ceil(20 / limit);
+  const [searchId, setSearchId] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [error, setError] = useState(null);
+  const categories = ["electronics", "jewelery", "men's clothing", "women's clothing"];
 
-  const totalPages = Math.ceil(20 / limit); // 20 total products
-
-  // Check if the products for the current page are in the localStorage
-  const fetchProductsFromCache = (page) => {
-    const cachedData = localStorage.getItem(`products_page_${page}`);
-    if (cachedData) {
-      return JSON.parse(cachedData);
-    }
-    return null;
+  const fetchProductsFromCache = (key) => {
+    const cachedData = localStorage.getItem(key);
+    return cachedData ? JSON.parse(cachedData) : null;
   };
 
-  // Store fetched products in localStorage to prevent re-fetching
-  const storeProductsInCache = (page, data) => {
-    localStorage.setItem(`products_page_${page}`, JSON.stringify(data));
+  const storeProductsInCache = (key, data) => {
+    localStorage.setItem(key, JSON.stringify(data));
   };
 
-  // Fetch products on page change
   useEffect(() => {
-    const cachedProducts = fetchProductsFromCache(page);
-    
+    let cacheKey = searchId ? `product_${searchId}` : selectedCategory ? `category_${selectedCategory}` : `page_${page}`;
+    const cachedProducts = fetchProductsFromCache(cacheKey);
+  
     if (cachedProducts) {
-      // If cached data exists, set it directly
       setProducts(cachedProducts);
+      if (searchId && selectedCategory && cachedProducts[0]?.category !== selectedCategory) {
+        setError("Product does not belong to the selected category");
+      } else {
+        setError(null);
+      }
     } else {
-      // Otherwise, fetch from the API and cache the result
-      fetch(`https://fakestoreapi.com/products?limit=${limit * page}`)
-        .then((res) => res.json())
-        .then((data) => {
-          setProducts(data);
-          storeProductsInCache(page, data); // Store in cache
+      let url = "";
+      if (searchId) {
+        url = `https://fakestoreapi.com/products/${searchId}`;
+      } else if (selectedCategory) {
+        url = `https://fakestoreapi.com/products/category/${selectedCategory}`;
+      } else {
+        url = `https://fakestoreapi.com/products?limit=${limit * page}`;
+      }
+  
+      fetch(url)
+        .then((res) => {
+          if (!res.ok) throw new Error("Product not found");
+          return res.json();
         })
-        .catch((error) => console.error("Error fetching products:", error));
+        .then((data) => {
+          const fetchedProducts = Array.isArray(data) ? data : [data];
+          setProducts(fetchedProducts);
+          storeProductsInCache(cacheKey, fetchedProducts);
+  
+          // Check category mismatch case
+          if (searchId && selectedCategory && fetchedProducts[0]?.category !== selectedCategory) {
+            setError("Product does not belong to the selected category");
+          } else {
+            setError(null);
+          }
+        })
+        .catch(() => {
+          setProducts([]);
+          setError("No products found!");
+        });
     }
-  }, [page]);
+  }, [searchId, selectedCategory, page]);  
 
-  // Display only the last 5 of fetched data
-  const displayedProducts = products.slice(-limit); 
+  const handleReset = () => {
+    setSearchId("");
+    setSelectedCategory("");
+    setError(null);
+  };
 
+  let displayedProducts = [];
+  if (error === "Product does not belong to the selected category") {
+    displayedProducts = []; // Ensure no product is displayed
+  } else {
+    displayedProducts = searchId || selectedCategory ? products : products.slice(-limit);
+  }
+  
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
-      {/* Navbar */}
       <nav style={{ display: "flex", justifyContent: "space-between", padding: "10px 20px", borderBottom: "1px solid #ddd" }}>
         <img src="/Weasydoo.png" alt="Weasydoo Logo" style={{ height: "40px" }} />
         {token ? (
@@ -64,47 +97,61 @@ export default function Home() {
           <button onClick={() => router.push("/login")}>Login</button>
         )}
       </nav>
-
-      {/* Product Table */}
-      <table style={{ width: "80%", margin: "20px auto", borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            <th style={{ border: "1px solid #ddd", padding: "10px" }}>Image</th>
-            <th style={{ border: "1px solid #ddd", padding: "10px" }}>Title</th>
-            <th style={{ border: "1px solid #ddd", padding: "10px" }}>Price</th>
-            <th style={{ border: "1px solid #ddd", padding: "10px" }}>Category</th>
-          </tr>
-        </thead>
-        <tbody>
-          {displayedProducts.map((product) => (
-            <tr key={product.id}>
-              <td style={{ border: "1px solid #ddd", padding: "10px" }}>
-                <img src={product.image} alt={product.title} style={{ width: "50px" }} />
-              </td>
-              <td style={{ border: "1px solid #ddd", padding: "10px" }}>{product.title}</td>
-              <td style={{ border: "1px solid #ddd", padding: "10px" }}>${product.price.toFixed(2)}</td>
-              <td style={{ border: "1px solid #ddd", padding: "10px" }}>{product.category}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* Pagination Buttons */}
-      <div>
-        <button 
-          onClick={() => setPage(page - 1)} 
-          disabled={page <= 1}
-          style={{ marginRight: "10px" }}
-        >
-          Previous
-        </button>
-        <button 
-          onClick={() => setPage(page + 1)} 
-          disabled={page >= totalPages}
-        >
-          Next
-        </button>
+      <div style={{ margin: "20px 0" }}>
+        {categories.map((category) => (
+          <button
+            key={category}
+            onClick={() => setSelectedCategory(category)}
+            style={{ marginRight: "10px", padding: "8px", backgroundColor: selectedCategory === category ? "#ddd" : "#fff" }}
+          >
+            {category}
+          </button>
+        ))}
+        <input
+          type="number"
+          min="1"
+          placeholder="Search by Product ID"
+          value={searchId}
+          onChange={(e) => setSearchId(e.target.value)}
+          style={{ padding: "8px", marginRight: "10px" }}
+        />
+        {(searchId || selectedCategory) && (
+          <button onClick={handleReset} style={{ padding: "8px" }}>Reset</button>
+        )}
       </div>
+      {error && <p>{error}</p>}
+      {displayedProducts.length > 0 ? (
+        <table style={{ width: "80%", margin: "20px auto", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th style={{ border: "1px solid #ddd", padding: "10px" }}>Image</th>
+              <th style={{ border: "1px solid #ddd", padding: "10px" }}>Title</th>
+              <th style={{ border: "1px solid #ddd", padding: "10px" }}>Price</th>
+              <th style={{ border: "1px solid #ddd", padding: "10px" }}>Category</th>
+            </tr>
+          </thead>
+          <tbody>
+            {displayedProducts.map((product) => (
+              <tr key={product.id}>
+                <td style={{ border: "1px solid #ddd", padding: "10px" }}>
+                  <img src={product.image} alt={product.title} style={{ width: "50px" }} />
+                </td>
+                <td style={{ border: "1px solid #ddd", padding: "10px" }}>{product.title}</td>
+                <td style={{ border: "1px solid #ddd", padding: "10px" }}>${product.price.toFixed(2)}</td>
+                <td style={{ border: "1px solid #ddd", padding: "10px" }}>{product.category}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        !error && <p>No products found!</p>
+      )}
+      {!(searchId || selectedCategory) && (
+        <div>
+          <button onClick={() => setPage(page - 1)} disabled={page <= 1} style={{ marginRight: "10px" }}>Previous</button>
+          <button onClick={() => setPage(page + 1)} disabled={page >= totalPages}>Next</button>
+        </div>
+      )}
     </div>
   );
 }
