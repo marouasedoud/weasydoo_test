@@ -26,10 +26,20 @@ export default function Home() {
     localStorage.setItem(key, JSON.stringify(data));
   };
 
-  useEffect(() => {
+  const clearCache = () => {
+    localStorage.clear(); // Clear all cached data
+    setProducts([]);
+    setSearchId("");
+    setSelectedCategory("");
+    setError(null);
+    fetchData(); // Re-fetch data from the API
+    logout();
+  };
+
+  const fetchData = () => {
     let cacheKey = searchId ? `product_${searchId}` : selectedCategory ? `category_${selectedCategory}` : `page_${page}`;
     const cachedProducts = fetchProductsFromCache(cacheKey);
-  
+
     if (cachedProducts) {
       setProducts(cachedProducts);
       if (searchId && selectedCategory && cachedProducts[0]?.category !== selectedCategory) {
@@ -46,7 +56,7 @@ export default function Home() {
       } else {
         url = `https://fakestoreapi.com/products?limit=${limit * page}`;
       }
-  
+
       fetch(url)
         .then((res) => {
           if (!res.ok) throw new Error("Product not found");
@@ -56,7 +66,7 @@ export default function Home() {
           const fetchedProducts = Array.isArray(data) ? data : [data];
           setProducts(fetchedProducts);
           storeProductsInCache(cacheKey, fetchedProducts);
-  
+
           // Check category mismatch case
           if (searchId && selectedCategory && fetchedProducts[0]?.category !== selectedCategory) {
             setError("Product does not belong to the selected category");
@@ -69,6 +79,10 @@ export default function Home() {
           setError("No products found!");
         });
     }
+  };
+
+  useEffect(() => {
+    fetchData(); // Call the fetchData function when the component is mounted or dependencies change
   }, [searchId, selectedCategory, page]);  
 
   const handleReset = () => {
@@ -83,11 +97,15 @@ export default function Home() {
   } else {
     displayedProducts = searchId || selectedCategory ? products : products.slice(-limit);
   }
-  
+
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
       <nav style={{ display: "flex", justifyContent: "space-between", padding: "10px 20px", borderBottom: "1px solid #ddd" }}>
         <img src="/Weasydoo.png" alt="Weasydoo Logo" style={{ height: "40px" }} />
+        {/* Clear cache button at the top */}
+        <button onClick={clearCache} style={{ marginBottom: "20px", padding: "8px", backgroundColor: "#f44336", color: "#fff" }}>
+          Clear All Cached Data
+        </button>
         {token ? (
           <div>
             <span style={{ marginRight: "10px" }}>Welcome, {username}!</span>
@@ -97,6 +115,7 @@ export default function Home() {
           <button onClick={() => router.push("/login")}>Login</button>
         )}
       </nav>
+      
       <div style={{ margin: "20px 0" }}>
         {categories.map((category) => (
           <button
@@ -129,7 +148,7 @@ export default function Home() {
               <th style={{ border: "1px solid #ddd", padding: "10px" }}>Price</th>
               <th style={{ border: "1px solid #ddd", padding: "10px" }}>Category</th>
               <th style={{ border: "1px solid #ddd", padding: "10px" }}>Action</th>
-              </tr>
+            </tr>
           </thead>
           <tbody>
             {displayedProducts.map((product) => (
