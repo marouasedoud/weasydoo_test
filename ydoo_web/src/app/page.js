@@ -33,7 +33,58 @@ export default function Home() {
     setSelectedCategory("");
     setError(null);
     fetchData(); // Re-fetch data from the API
-    logout();
+  };
+
+  // Fetch deleted products list from localStorage
+  const getDeletedProducts = () => {
+    const deletedProducts = localStorage.getItem("deletedProducts");
+    return deletedProducts ? JSON.parse(deletedProducts) : [];
+  };
+
+  // Save deleted products list to localStorage
+  const saveDeletedProducts = (deletedProducts) => {
+    localStorage.setItem("deletedProducts", JSON.stringify(deletedProducts));
+  };
+
+  const deleteProductFromCache = (deletedProductId) => {
+    // Get the current deleted products list from localStorage
+    const deletedProducts = getDeletedProducts();
+
+    // Add the product ID to the deleted products list if not already there
+    if (!deletedProducts.includes(deletedProductId)) {
+      deletedProducts.push(deletedProductId);
+      saveDeletedProducts(deletedProducts);
+    }
+
+    // Delete from category-based cache
+    categories.forEach((category) => {
+      const categoryCacheKey = `category_${category}`;
+      const cachedCategoryProducts = fetchProductsFromCache(categoryCacheKey);
+      if (cachedCategoryProducts) {
+        const updatedCategoryProducts = cachedCategoryProducts.filter(product => product.id !== deletedProductId);
+        storeProductsInCache(categoryCacheKey, updatedCategoryProducts);
+      }
+    });
+
+    // Delete from product-specific cache (if searchId matches the product ID)
+    const searchCacheKey = `product_${searchId}`;
+    const cachedProduct = fetchProductsFromCache(searchCacheKey);
+    if (cachedProduct && cachedProduct.id === deletedProductId) {
+      localStorage.removeItem(searchCacheKey);
+    }
+
+    // Delete from page-based cache (for pages 1 to 4)
+    for (let i = 1; i <= totalPages; i++) {
+      const pageCacheKey = `page_${i}`;
+      const cachedPageProducts = fetchProductsFromCache(pageCacheKey);
+      if (cachedPageProducts) {
+        const updatedPageProducts = cachedPageProducts.filter(product => product.id !== deletedProductId);
+        storeProductsInCache(pageCacheKey, updatedPageProducts);
+      }
+    }
+
+    // Also update the state by filtering the deleted product from the displayed products
+    setProducts(prevProducts => prevProducts.filter(product => product.id !== deletedProductId));
   };
 
   const fetchData = () => {
@@ -41,8 +92,12 @@ export default function Home() {
     const cachedProducts = fetchProductsFromCache(cacheKey);
 
     if (cachedProducts) {
-      setProducts(cachedProducts);
-      if (searchId && selectedCategory && cachedProducts[0]?.category !== selectedCategory) {
+      // Exclude deleted products from the list
+      const deletedProducts = getDeletedProducts();
+      const filteredProducts = cachedProducts.filter(product => !deletedProducts.includes(product.id));
+      setProducts(filteredProducts);
+
+      if (searchId && selectedCategory && filteredProducts[0]?.category !== selectedCategory) {
         setError("Product does not belong to the selected category");
       } else {
         setError(null);
@@ -64,11 +119,16 @@ export default function Home() {
         })
         .then((data) => {
           const fetchedProducts = Array.isArray(data) ? data : [data];
-          setProducts(fetchedProducts);
-          storeProductsInCache(cacheKey, fetchedProducts);
+          
+          // Exclude deleted products from the fetched data
+          const deletedProducts = getDeletedProducts();
+          const filteredFetchedProducts = fetchedProducts.filter(product => !deletedProducts.includes(product.id));
+          
+          setProducts(filteredFetchedProducts);
+          storeProductsInCache(cacheKey, filteredFetchedProducts);
 
           // Check category mismatch case
-          if (searchId && selectedCategory && fetchedProducts[0]?.category !== selectedCategory) {
+          if (searchId && selectedCategory && filteredFetchedProducts[0]?.category !== selectedCategory) {
             setError("Product does not belong to the selected category");
           } else {
             setError(null);
@@ -91,6 +151,28 @@ export default function Home() {
     setError(null);
   };
 
+  const handleDeleteProduct = (deletedProductId) => {
+    // Ask for confirmation before proceeding with the deletion
+    const isConfirmed = window.confirm("Are you sure you want to delete this product?");
+  
+    if (isConfirmed) {
+      // Proceed with deleting the product if the user confirmed
+      deleteProductFromCache(deletedProductId);
+  
+      // Call the actual API to delete (not affecting cache)
+      fetch(`https://fakestoreapi.com/products/${deletedProductId}`, {
+        method: 'DELETE',
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);  // Successful deletion message (for demonstration)
+      });
+    } else {
+      // If the user cancels the action, just return without doing anything
+      console.log("Deletion canceled");
+    }
+  };
+  
   let displayedProducts = [];
   if (error === "Product does not belong to the selected category") {
     displayedProducts = []; // Ensure no product is displayed
@@ -104,7 +186,7 @@ export default function Home() {
         <img src="/Weasydoo.png" alt="Weasydoo Logo" style={{ height: "40px" }} />
         {/* Clear cache button at the top */}
         <button onClick={clearCache} style={{ marginBottom: "20px", padding: "8px", backgroundColor: "#f44336", color: "#fff" }}>
-          Clear All Cached Data
+          Clear Cached Data
         </button>
         {token ? (
           <div>
@@ -161,6 +243,9 @@ export default function Home() {
                 <td style={{ border: "1px solid #ddd", padding: "10px" }}>{product.category}</td>
                 <td style={{ border: "1px solid #ddd", padding: "10px" }}>
                   <button onClick={() => router.push(`/product/${product.id}`)}>View More</button>
+                  {token && (
+                    <button onClick={() => handleDeleteProduct(product.id)}>Delete</button>
+                  )}
                 </td>
               </tr>
             ))}
