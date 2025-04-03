@@ -17,6 +17,17 @@ export default function Home() {
   const [error, setError] = useState(null);
   const categories = ["electronics", "jewelery", "men's clothing", "women's clothing"];
 
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editedProduct, setEditedProduct] = useState(null);
+  const [newProduct, setNewProduct] = useState({
+    title: "",
+    price: "",
+    category: "",
+    description: "",
+    image: "",
+  });
+
   const fetchProductsFromCache = (key) => {
     const cachedData = localStorage.getItem(key);
     return cachedData ? JSON.parse(cachedData) : null;
@@ -27,36 +38,31 @@ export default function Home() {
   };
 
   const clearCache = () => {
-    localStorage.clear(); // Clear all cached data
+    localStorage.clear();
     setProducts([]);
     setSearchId("");
     setSelectedCategory("");
     setError(null);
-    fetchData(); // Re-fetch data from the API
+    fetchData();
   };
 
-  // Fetch deleted products list from localStorage
   const getDeletedProducts = () => {
     const deletedProducts = localStorage.getItem("deletedProducts");
     return deletedProducts ? JSON.parse(deletedProducts) : [];
   };
 
-  // Save deleted products list to localStorage
   const saveDeletedProducts = (deletedProducts) => {
     localStorage.setItem("deletedProducts", JSON.stringify(deletedProducts));
   };
 
   const deleteProductFromCache = (deletedProductId) => {
-    // Get the current deleted products list from localStorage
     const deletedProducts = getDeletedProducts();
 
-    // Add the product ID to the deleted products list if not already there
     if (!deletedProducts.includes(deletedProductId)) {
       deletedProducts.push(deletedProductId);
       saveDeletedProducts(deletedProducts);
     }
 
-    // Delete from category-based cache
     categories.forEach((category) => {
       const categoryCacheKey = `category_${category}`;
       const cachedCategoryProducts = fetchProductsFromCache(categoryCacheKey);
@@ -66,14 +72,12 @@ export default function Home() {
       }
     });
 
-    // Delete from product-specific cache (if searchId matches the product ID)
     const searchCacheKey = `product_${searchId}`;
     const cachedProduct = fetchProductsFromCache(searchCacheKey);
     if (cachedProduct && cachedProduct.id === deletedProductId) {
       localStorage.removeItem(searchCacheKey);
     }
 
-    // Delete from page-based cache (for pages 1 to 4)
     for (let i = 1; i <= totalPages; i++) {
       const pageCacheKey = `page_${i}`;
       const cachedPageProducts = fetchProductsFromCache(pageCacheKey);
@@ -83,7 +87,6 @@ export default function Home() {
       }
     }
 
-    // Also update the state by filtering the deleted product from the displayed products
     setProducts(prevProducts => prevProducts.filter(product => product.id !== deletedProductId));
   };
 
@@ -92,7 +95,6 @@ export default function Home() {
     const cachedProducts = fetchProductsFromCache(cacheKey);
 
     if (cachedProducts) {
-      // Exclude deleted products from the list
       const deletedProducts = getDeletedProducts();
       const filteredProducts = cachedProducts.filter(product => !deletedProducts.includes(product.id));
       setProducts(filteredProducts);
@@ -119,15 +121,12 @@ export default function Home() {
         })
         .then((data) => {
           const fetchedProducts = Array.isArray(data) ? data : [data];
-          
-          // Exclude deleted products from the fetched data
           const deletedProducts = getDeletedProducts();
           const filteredFetchedProducts = fetchedProducts.filter(product => !deletedProducts.includes(product.id));
           
           setProducts(filteredFetchedProducts);
           storeProductsInCache(cacheKey, filteredFetchedProducts);
 
-          // Check category mismatch case
           if (searchId && selectedCategory && filteredFetchedProducts[0]?.category !== selectedCategory) {
             setError("Product does not belong to the selected category");
           } else {
@@ -142,8 +141,8 @@ export default function Home() {
   };
 
   useEffect(() => {
-    fetchData(); // Call the fetchData function when the component is mounted or dependencies change
-  }, [searchId, selectedCategory, page]);  
+    fetchData();
+  }, [searchId, selectedCategory, page]);
 
   const handleReset = () => {
     setSearchId("");
@@ -152,30 +151,78 @@ export default function Home() {
   };
 
   const handleDeleteProduct = (deletedProductId) => {
-    // Ask for confirmation before proceeding with the deletion
     const isConfirmed = window.confirm("Are you sure you want to delete this product?");
-  
     if (isConfirmed) {
-      // Proceed with deleting the product if the user confirmed
       deleteProductFromCache(deletedProductId);
-  
-      // Call the actual API to delete (not affecting cache)
       fetch(`https://fakestoreapi.com/products/${deletedProductId}`, {
         method: 'DELETE',
       })
       .then(response => response.json())
       .then(data => {
-        console.log(data);  // Successful deletion message (for demonstration)
+        console.log(data);
       });
     } else {
-      // If the user cancels the action, just return without doing anything
       console.log("Deletion canceled");
     }
   };
+
+  const handleEditProduct = (product) => {
+    setEditedProduct(product);
+    setIsEditModalOpen(true);
+  };
+
+  const handleAddProduct = () => {
+    setIsAddModalOpen(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (editedProduct) {
+      fetch(`https://fakestoreapi.com/products/${editedProduct.id}`, {
+        method: "PUT",
+        body: JSON.stringify(editedProduct),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+      .then((res) => res.json())
+      .then((updatedProduct) => {
+        setProducts(prevProducts => prevProducts.map(product => product.id === updatedProduct.id ? updatedProduct : product));
+        setIsEditModalOpen(false);
+      })
+      .catch((error) => {
+        console.error("Error updating product:", error);
+      });
+    }
+  };
+
+  const handleSaveNewProduct = () => {
+    // Ensure price is a number
+    const price = parseFloat(newProduct.price);
+    if (isNaN(price)) {
+      alert("Please enter a valid price.");
+      return;
+    }
   
+    const newProductWithPrice = { ...newProduct, price };
+    // Proceed with adding the product
+    fetch("https://fakestoreapi.com/products", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(newProductWithPrice),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setProducts([...displayedProducts, data]);
+        setNewProduct({ title: "", price: "", category: "", image: "" });
+        setIsAddModalOpen(false);
+      });
+  };  
+
   let displayedProducts = [];
   if (error === "Product does not belong to the selected category") {
-    displayedProducts = []; // Ensure no product is displayed
+    displayedProducts = [];
   } else {
     displayedProducts = searchId || selectedCategory ? products : products.slice(-limit);
   }
@@ -184,7 +231,6 @@ export default function Home() {
     <div style={{ textAlign: "center", marginTop: "50px" }}>
       <nav style={{ display: "flex", justifyContent: "space-between", padding: "10px 20px", borderBottom: "1px solid #ddd" }}>
         <img src="/Weasydoo.png" alt="Weasydoo Logo" style={{ height: "40px" }} />
-        {/* Clear cache button at the top */}
         <button onClick={clearCache} style={{ marginBottom: "20px", padding: "8px", backgroundColor: "#f44336", color: "#fff" }}>
           Clear Cached Data
         </button>
@@ -221,6 +267,8 @@ export default function Home() {
         )}
       </div>
       {error && <p>{error}</p>}
+
+      {token && <button onClick={handleAddProduct}>+ Add New Product</button>}
       {displayedProducts.length > 0 ? (
         <table style={{ width: "80%", margin: "20px auto", borderCollapse: "collapse" }}>
           <thead>
@@ -244,7 +292,10 @@ export default function Home() {
                 <td style={{ border: "1px solid #ddd", padding: "10px" }}>
                   <button onClick={() => router.push(`/product/${product.id}`)}>View More</button>
                   {token && (
-                    <button onClick={() => handleDeleteProduct(product.id)}>Delete</button>
+                    <>
+                      <button onClick={() => handleEditProduct(product)}>Edit</button>
+                      <button onClick={() => handleDeleteProduct(product.id)}>Delete</button>
+                    </>
                   )}
                 </td>
               </tr>
@@ -254,10 +305,82 @@ export default function Home() {
       ) : (
         !error && <p>No products found!</p>
       )}
+      
       {!(searchId || selectedCategory) && (
         <div>
           <button onClick={() => setPage(page - 1)} disabled={page <= 1} style={{ marginRight: "10px" }}>Previous</button>
           <button onClick={() => setPage(page + 1)} disabled={page >= totalPages}>Next</button>
+        </div>
+      )}
+
+      {isEditModalOpen && (
+        <div style={{ position: "fixed", top: "0", left: "0", width: "100%", height: "100%", background: "rgba(0, 0, 0, 0.7)" }}>
+          <div style={{ margin: "100px auto", padding: "20px", background: "#fff", width: "80%", maxWidth: "500px" }}>
+            <h3>Edit Product</h3>
+            <input
+              type="text"
+              value={editedProduct?.title || ""}
+              onChange={(e) => setEditedProduct({...editedProduct, title: e.target.value})}
+              placeholder="Title"
+            />
+            <input
+              type="text"
+              value={editedProduct?.price || ""}
+              onChange={(e) => setEditedProduct({...editedProduct, price: e.target.value})}
+              placeholder="Price"
+            />
+            <input
+              type="text"
+              value={editedProduct?.category || ""}
+              onChange={(e) => setEditedProduct({...editedProduct, category: e.target.value})}
+              placeholder="Category"
+            />
+            <button onClick={handleSaveEdit}>Save Changes</button>
+            <button onClick={() => setIsEditModalOpen(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {isAddModalOpen && (
+        <div style={{ position: "fixed", top: "0", left: "0", width: "100%", height: "100%", background: "rgba(0, 0, 0, 0.7)" }}>
+          <div style={{ margin: "100px auto", padding: "20px", background: "#fff", width: "80%", maxWidth: "500px" }}>
+            <h3>Add New Product</h3>
+            <input
+              type="text"
+              value={newProduct.title}
+              onChange={(e) => setNewProduct({...newProduct, title: e.target.value})}
+              placeholder="Title"
+            />
+            <input
+              type="text"
+              value={newProduct.price}
+              placeholder="Price"
+              onChange={(e) => setNewProduct({
+                ...newProduct,
+                price: e.target.value
+              })}
+            />
+            <input
+              type="text"
+              value={newProduct.category}
+              onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
+              placeholder="Category"
+            />
+            <input
+              type="text"
+              value={newProduct.description}
+              onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
+              placeholder="Description"
+            />
+            <input
+              type="text"
+              value={newProduct.image}
+              onChange={(e) => setNewProduct({...newProduct, image: e.target.value})}
+              placeholder="Image URL"
+            />
+            <button onClick={handleSaveNewProduct}>Save New Product</button>
+            <button onClick={() => setIsAddModalOpen(false)}>Cancel</button>
+          </div>
         </div>
       )}
     </div>
