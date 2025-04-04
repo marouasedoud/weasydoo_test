@@ -5,6 +5,8 @@
     padding: 10px 20px;
     border-bottom: 1px solid #ddd;
     margin-bottom: 30px;
+    margin-top: 10px;
+    padding-bottom: 20px;
     /* Adds space below the navbar */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     /* Small shadow below the line */

@@ -166,3 +166,153 @@ a.secondary {
     filter: invert();
   }
 }
+
+/**/
+.productControls {
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Main Container */
+.categorySearchContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 80%;
+  /* Make it more centralized and balanced */
+  max-width: 1200px;
+}
+
+/* Category Buttons */
+.categoryButtons {
+  display: flex;
+  gap: 10px;
+}
+
+.categoryButton {
+  padding: 10px 16px;
+  background-color: #fff;
+  color: #036;
+  border: 1px solid #036;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.categoryButton.active {
+  background-color: #2563EB;
+  color: white;
+}
+
+.categoryButton:hover {
+  background-color: #1D4ED8;
+  color: white;
+}
+
+/* Search Input */
+.searchSection {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.searchInput {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  width: 250px;
+  transition: border-color 0.3s;
+}
+
+.searchInput:focus {
+  border-color: #2563EB;
+  outline: none;
+}
+
+.resetButton {
+  padding: 10px 16px;
+  background-color: #ddd;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.resetButton:hover {
+  background-color: #bbb;
+}
+
+/* Action Buttons */
+.actionButtons {
+  display: flex;
+  gap: 15px;
+}
+
+.actionButton {
+  background: linear-gradient(145deg, #3B82F6, #2563EB);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.actionButton:hover {
+  background: linear-gradient(145deg, #2563EB, #1D4ED8);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.actionButton:active {
+  background: #1D4ED8;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transform: translateY(1px);
+}
+
+.errorMessage {
+  color: #f44336;
+  font-size: 14px;
+}
+
+@media (max-width: 600px) {
+
+  /* Main Container */
+  .categorySearchContainer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1200px;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 10px;
+  }
+
+  /* Category Buttons */
+  .categoryButtons {
+    display: inline-flex;
+    gap: 10px;
+  }
+
+  /* Hide scroll bar for better look */
+  .categorySearchContainer::-webkit-scrollbar {
+    display: none;
+  }
+
+  .categorySearchContainer {
+    padding: 0 10px;
+  }
+
+  /* Add spacing between search bar and category tabs */
+  .searchSection {
+    margin-left: 20px;
+    /* Adjust this value as needed */
+  }
+}

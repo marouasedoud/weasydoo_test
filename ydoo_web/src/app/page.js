@@ -3,6 +3,8 @@
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "./context/AuthContext";
 import { useRouter } from "next/navigation";
+import NavBar from "./components/navBar";
+import styles from './page.module.css';
 
 export default function Home() {
   const { token, username, logout } = useContext(AuthContext);
@@ -228,47 +230,49 @@ export default function Home() {
   }
 
   return (
-    <div style={{ textAlign: "center", marginTop: "50px" }}>
-      <nav style={{ display: "flex", justifyContent: "space-between", padding: "10px 20px", borderBottom: "1px solid #ddd" }}>
-        <img src="/Weasydoo.png" alt="Weasydoo Logo" style={{ height: "40px" }} />
-        <button onClick={clearCache} style={{ marginBottom: "20px", padding: "8px", backgroundColor: "#f44336", color: "#fff" }}>
-          Clear Cached Data
-        </button>
-        {token ? (
-          <div>
-            <span style={{ marginRight: "10px" }}>Welcome, {username}!</span>
-            <button onClick={logout}>Logout</button>
+    <div style={{ textAlign: "center" }}>
+      <NavBar/>
+      <div className={styles.productControls}>
+        <div className={styles.categorySearchContainer}>
+          <div className={styles.categoryButtons}>
+            {categories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`${styles.categoryButton} ${selectedCategory === category ? styles.active : ''}`}
+              >
+                {category}
+              </button>
+            ))}
           </div>
-        ) : (
-          <button onClick={() => router.push("/login")}>Login</button>
-        )}
-      </nav>
-      
-      <div style={{ margin: "20px 0" }}>
-        {categories.map((category) => (
-          <button
-            key={category}
-            onClick={() => setSelectedCategory(category)}
-            style={{ marginRight: "10px", padding: "8px", backgroundColor: selectedCategory === category ? "#ddd" : "#fff" }}
-          >
-            {category}
-          </button>
-        ))}
-        <input
-          type="number"
-          min="1"
-          placeholder="Search by Product ID"
-          value={searchId}
-          onChange={(e) => setSearchId(e.target.value)}
-          style={{ padding: "8px", marginRight: "10px" }}
-        />
-        {(searchId || selectedCategory) && (
-          <button onClick={handleReset} style={{ padding: "8px" }}>Reset</button>
-        )}
-      </div>
-      {error && <p>{error}</p>}
 
-      {token && <button onClick={handleAddProduct}>+ Add New Product</button>}
+          <div className={styles.searchSection}>
+            <input
+              type="number"
+              min="1"
+              placeholder="Search by Product ID"
+              value={searchId}
+              onChange={(e) => setSearchId(e.target.value)}
+              className={styles.searchInput}
+            />
+            {(searchId || selectedCategory) && (
+              <button onClick={handleReset} className={styles.resetButton}>Reset</button>
+            )}
+          </div>
+        </div>
+
+        {error && <p className={styles.errorMessage}>{error}</p>}
+        
+        <div className={styles.actionButtons}>
+          {token && 
+          <>
+            <button onClick={handleAddProduct} className={styles.actionButton}>Add Item</button>
+            <button onClick={clearCache} className={styles.actionButton}>Clear Cached Data</button>
+          </>
+          }
+        </div>
+      </div>
+    
       {displayedProducts.length > 0 ? (
         <table style={{ width: "80%", margin: "20px auto", borderCollapse: "collapse" }}>
           <thead>
