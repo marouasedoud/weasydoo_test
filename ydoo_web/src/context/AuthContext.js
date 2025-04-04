@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
       });
 
       if (!response.ok) {
-        throw new Error("Login failed. Please check your credentials.");
+        throw new Error("Invalid username or password."); // Custom error message
       }
 
       const data = await response.json();
@@ -40,6 +40,7 @@ export const AuthProvider = ({ children }) => {
       router.push("/"); // Redirect to Home
     } catch (error) {
       console.error("Login Error:", error.message);
+      throw error; // Re-throw the error to be caught by the login page
     }
   };
 
