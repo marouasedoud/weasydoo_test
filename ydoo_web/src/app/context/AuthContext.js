@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
       setUsername(username);
       localStorage.setItem("authToken", data.token);
       localStorage.setItem("username", username);
-      router.push("/"); // Redirect to Home
+      router.back()
     } catch (error) {
       console.error("Login Error:", error.message);
       throw error; // Re-throw the error to be caught by the login page
@@ -49,7 +49,6 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("username");
     setToken(null);
     setUsername(null);
-    router.push("/"); // Redirect to Home
   };
 
   return (

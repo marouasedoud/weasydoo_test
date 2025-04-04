@@ -1,9 +1,9 @@
-// src/app/login/page.js
-
 "use client"; // Required for Next.js hooks
 
 import { useState, useContext } from "react";
-import { AuthContext } from "../../context/AuthContext";
+import { useRouter } from "next/navigation";
+import { AuthContext } from "../context/AuthContext";
+import { AiOutlineArrowLeft } from "react-icons/ai";
 import styles from "./loginPage.module.css";  // Use module import
 
 export default function LoginPage() {
@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,6 +24,9 @@ export default function LoginPage() {
 
   return (
     <div className={styles.loginContainer}>
+      <button className={styles.arrowButton} onClick={() => router.back()}>
+        <AiOutlineArrowLeft className={styles.arrowIcon} />
+      </button>
       <div className={styles.textContainer}>
         <div>Authorized</div>
         <div>users</div>
@@ -32,7 +36,7 @@ export default function LoginPage() {
         <img
           src="/Weasydoo.png"
           alt="Weasydoo Logo"
-          className={styles.logoImage}  // Using the logoImage class for styling
+          className={styles.logoImage}
         />
         {error && <div className={styles.error}>{error}</div>}
         <form onSubmit={handleSubmit}>
