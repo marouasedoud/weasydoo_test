@@ -5,6 +5,7 @@ import { AuthContext } from "./context/AuthContext";
 import { useRouter } from "next/navigation";
 import NavBar from "./components/navBar";
 import styles from './page.module.css';
+import { FaAngleLeft, FaAngleRight, FaEdit, FaTrashAlt } from "react-icons/fa";
 
 export default function Home() {
   const { token, username, logout } = useContext(AuthContext);
@@ -230,7 +231,7 @@ export default function Home() {
   }
 
   return (
-    <div style={{ textAlign: "center" }}>
+    <div style={{ textAlign: "center"}}>
       <NavBar/>
       <div className={styles.productControls}>
         <div className={styles.categorySearchContainer}>
@@ -260,130 +261,198 @@ export default function Home() {
             )}
           </div>
         </div>
-
         {error && <p className={styles.errorMessage}>{error}</p>}
-        
-        <div className={styles.actionButtons}>
-          {token && 
+      </div>
+      
+      <div className={styles.actionButtons}>
+        {token && (
+          <button 
+            onClick={handleAddProduct} 
+            className={styles.actionButton}
+          >
+            Add Item
+          </button>
+        )}
+      </div>
+
+      <div className={styles.productGridWrapper}>
+        {!(searchId || selectedCategory) && (
           <>
-            <button onClick={handleAddProduct} className={styles.actionButton}>Add Item</button>
-            <button onClick={clearCache} className={styles.actionButton}>Clear Cached Data</button>
+            <button
+              className={styles.leftArrow}
+              onClick={() => setPage(page - 1)}
+              disabled={page <= 1}
+            >
+              <FaAngleLeft />
+            </button>
+
+            <button
+              className={styles.rightArrow}
+              onClick={() => setPage(page + 1)}
+              disabled={page >= totalPages}
+            >
+              <FaAngleRight />
+            </button>
           </>
-          }
+        )}
+
+        <div className={styles.productGrid}>
+          {displayedProducts.length > 0 ? (
+            displayedProducts.map((product) => (
+              <div key={product.id} className={styles.productCard}>
+                {product.discount && (
+                  <span className={styles.discountBadge}>{product.discount}%</span>
+                )}
+                <img
+                  onClick={() => router.push(`/product/${product.id}`)}
+                  src={product.image}
+                  alt={product.title}
+                  className={styles.productImage}
+                />
+                <div className={styles.productDetails}>
+                  <p className={styles.productCategory}>{product.category}</p>
+                  <h3 className={styles.productTitle}>{product.title}</h3>
+                  <p className={styles.productPrice}>
+                    <strong>{product.price.toFixed(2)} $</strong>
+                  </p>
+                  {product.originalPrice && (
+                    <p className={styles.originalPrice}>{product.originalPrice.toFixed(2)} $</p>
+                  )}
+                </div>
+
+                {/* Edit and Delete buttons for each product */}
+                {token && (
+                  <div className={styles.productActions}>
+                    <button onClick={() => handleEditProduct(product)} className={styles.editButton}>
+                      <FaEdit />
+                    </button>
+                    <button onClick={() => handleDeleteProduct(product.id)} className={styles.deleteButton}>
+                      <FaTrashAlt />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))
+          ) : (
+            <p className={styles.noProducts}>No products found!</p>
+          )}
         </div>
       </div>
-    
-      {displayedProducts.length > 0 ? (
-        <table style={{ width: "80%", margin: "20px auto", borderCollapse: "collapse" }}>
-          <thead>
-            <tr>
-              <th style={{ border: "1px solid #ddd", padding: "10px" }}>Image</th>
-              <th style={{ border: "1px solid #ddd", padding: "10px" }}>Title</th>
-              <th style={{ border: "1px solid #ddd", padding: "10px" }}>Price</th>
-              <th style={{ border: "1px solid #ddd", padding: "10px" }}>Category</th>
-              <th style={{ border: "1px solid #ddd", padding: "10px" }}>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {displayedProducts.map((product) => (
-              <tr key={product.id}>
-                <td style={{ border: "1px solid #ddd", padding: "10px" }}>
-                  <img src={product.image} alt={product.title} style={{ width: "50px" }} />
-                </td>
-                <td style={{ border: "1px solid #ddd", padding: "10px" }}>{product.title}</td>
-                <td style={{ border: "1px solid #ddd", padding: "10px" }}>${product.price.toFixed(2)}</td>
-                <td style={{ border: "1px solid #ddd", padding: "10px" }}>{product.category}</td>
-                <td style={{ border: "1px solid #ddd", padding: "10px" }}>
-                  <button onClick={() => router.push(`/product/${product.id}`)}>View More</button>
-                  {token && (
-                    <>
-                      <button onClick={() => handleEditProduct(product)}>Edit</button>
-                      <button onClick={() => handleDeleteProduct(product.id)}>Delete</button>
-                    </>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : (
-        !error && <p>No products found!</p>
-      )}
-      
-      {!(searchId || selectedCategory) && (
-        <div>
-          <button onClick={() => setPage(page - 1)} disabled={page <= 1} style={{ marginRight: "10px" }}>Previous</button>
-          <button onClick={() => setPage(page + 1)} disabled={page >= totalPages}>Next</button>
-        </div>
-      )}
+      <div className={styles.footer}>
+        <p>© 2025 Maroua Sedoud. All rights reserved.</p>
+        <button onClick={clearCache} className={styles.actionButton}>Clear Cached Data</button>
+      </div>
 
       {isEditModalOpen && (
-        <div style={{ position: "fixed", top: "0", left: "0", width: "100%", height: "100%", background: "rgba(0, 0, 0, 0.7)" }}>
-          <div style={{ margin: "100px auto", padding: "20px", background: "#fff", width: "80%", maxWidth: "500px" }}>
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
             <h3>Edit Product</h3>
             <input
               type="text"
               value={editedProduct?.title || ""}
-              onChange={(e) => setEditedProduct({...editedProduct, title: e.target.value})}
+              onChange={(e) => setEditedProduct({ ...editedProduct, title: e.target.value })}
               placeholder="Title"
+              className={styles.inputField}
             />
             <input
-              type="text"
+              type="number"
+              min="0"
               value={editedProduct?.price || ""}
-              onChange={(e) => setEditedProduct({...editedProduct, price: e.target.value})}
+              onChange={(e) => setEditedProduct({ ...editedProduct, price: e.target.value })}
               placeholder="Price"
+              className={styles.inputField}
+            />
+            <select
+              value={editedProduct?.category || ""}
+              onChange={(e) => setEditedProduct({ ...editedProduct, category: e.target.value })}
+              className={styles.inputField}
+            >
+              <option value="electronics">electronics</option>
+              <option value="jewelery">jewelery</option>
+              <option value="men's clothing">men's clothing</option>
+              <option value="women's clothing">women's clothing</option>
+            </select>
+            <input
+              type="text"
+              value={editedProduct?.description || ""}
+              onChange={(e) => setEditedProduct({ ...editedProduct, description: e.target.value })}
+              placeholder="Description"
+              className={styles.inputField}
             />
             <input
               type="text"
-              value={editedProduct?.category || ""}
-              onChange={(e) => setEditedProduct({...editedProduct, category: e.target.value})}
-              placeholder="Category"
+              value={editedProduct?.image || ""}
+              onChange={(e) => setEditedProduct({ ...editedProduct, image: e.target.value })}
+              placeholder="Image URL"
+              className={styles.inputField}
             />
-            <button onClick={handleSaveEdit}>Save Changes</button>
-            <button onClick={() => setIsEditModalOpen(false)}>Cancel</button>
+            
+            {/* Button Container for Save & Cancel */}
+            <div className={styles.buttonContainer}>
+              <button onClick={handleSaveEdit} className={styles.saveBtn}>
+                Save Changes
+              </button>
+              <button onClick={() => setIsEditModalOpen(false)} className={styles.cancelBtn}>
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {isAddModalOpen && (
-        <div style={{ position: "fixed", top: "0", left: "0", width: "100%", height: "100%", background: "rgba(0, 0, 0, 0.7)" }}>
-          <div style={{ margin: "100px auto", padding: "20px", background: "#fff", width: "80%", maxWidth: "500px" }}>
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
             <h3>Add New Product</h3>
             <input
               type="text"
               value={newProduct.title}
-              onChange={(e) => setNewProduct({...newProduct, title: e.target.value})}
+              onChange={(e) => setNewProduct({ ...newProduct, title: e.target.value })}
               placeholder="Title"
+              className={styles.inputField}
             />
             <input
-              type="text"
+              type="number"
+              min="0"
               value={newProduct.price}
               placeholder="Price"
-              onChange={(e) => setNewProduct({
-                ...newProduct,
-                price: e.target.value
-              })}
+              onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+              className={styles.inputField}
             />
-            <input
-              type="text"
+            <select
               value={newProduct.category}
-              onChange={(e) => setNewProduct({...newProduct, category: e.target.value})}
-              placeholder="Category"
-            />
+              onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
+              className={styles.inputField}
+            >
+              <option value="electronics">electronics</option>
+              <option value="jewelery">jewelery</option>
+              <option value="men's clothing">men's clothing</option>
+              <option value="women's clothing">women's clothing</option>
+            </select>
             <input
               type="text"
               value={newProduct.description}
-              onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
+              onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
               placeholder="Description"
+              className={styles.inputField}
             />
             <input
               type="text"
               value={newProduct.image}
-              onChange={(e) => setNewProduct({...newProduct, image: e.target.value})}
+              onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
               placeholder="Image URL"
+              className={styles.inputField}
             />
-            <button onClick={handleSaveNewProduct}>Save New Product</button>
-            <button onClick={() => setIsAddModalOpen(false)}>Cancel</button>
+            
+            {/* Button Container for Save & Cancel */}
+            <div className={styles.buttonContainer}>
+              <button onClick={handleSaveNewProduct} className={styles.saveBtn}>
+                Save
+              </button>
+              <button onClick={() => setIsAddModalOpen(false)} className={styles.cancelBtn}>
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}

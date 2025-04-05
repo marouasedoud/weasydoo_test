@@ -245,36 +245,6 @@ a.secondary {
   background-color: #bbb;
 }
 
-/* Action Buttons */
-.actionButtons {
-  display: flex;
-  gap: 15px;
-}
-
-.actionButton {
-  background: linear-gradient(145deg, #3B82F6, #2563EB);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.actionButton:hover {
-  background: linear-gradient(145deg, #2563EB, #1D4ED8);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.actionButton:active {
-  background: #1D4ED8;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  transform: translateY(1px);
-}
-
 .errorMessage {
   color: #f44336;
   font-size: 14px;
@@ -315,4 +285,425 @@ a.secondary {
     margin-left: 20px;
     /* Adjust this value as needed */
   }
+}
+
+/*****/
+.productCard {
+  background: #fff;
+  border-radius: 10px;
+  text-align: center;
+  overflow: hidden;
+  transition: transform 0.2s ease-in-out;
+}
+
+.productImage {
+  width: 100%;
+  height: 250px;
+  object-fit: contain;
+  object-position: center;
+  background-color: #f9f9f9;
+  /* Optional: gives a subtle background for transparency */
+  padding: 10px;
+  /* Optional: adds some spacing for uniformity */
+}
+
+.productCard:hover {
+  transform: scale(1.05);
+}
+
+.discountBadge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #ff4d4d;
+  color: white;
+  padding: 5px 10px;
+  font-size: 12px;
+  border-radius: 15px;
+  font-weight: bold;
+}
+
+.productDetails {
+  padding: 10px;
+}
+
+.productTitle {
+  font-size: 14px;
+  color: #333;
+}
+
+.productPrice {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.originalPrice {
+  font-size: 14px;
+  text-decoration: line-through;
+  color: #888;
+}
+
+.paginationContainer {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1200px;
+  margin: auto;
+  position: relative;
+  top: -50%;
+  transform: translateY(-50%);
+}
+
+.arrowButton {
+  background: rgba(0, 0, 0, 0.4);
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  font-size: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.arrowButton:hover {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.arrowButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.productGridWrapper {
+  position: relative;
+  max-width: 1200px;
+  margin: auto;
+}
+
+.productGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  justify-content: center;
+  padding: 20px;
+}
+
+.productCategory {
+  font-size: 12px;
+  color: #888;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 5px;
+  background: #f0f0f0;
+  padding: 4px 8px;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+.leftArrow,
+.rightArrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 24px;
+  /* Adjusted for smaller devices */
+  color: black;
+  cursor: pointer;
+  z-index: 1;
+  transition: color 0.3s ease;
+}
+
+.leftArrow:hover,
+.rightArrow:hover {
+  color: #333;
+}
+
+.leftArrow:disabled,
+.rightArrow:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.leftArrow {
+  left: 10px;
+  /* Changed to ensure they stay within the screen on smaller screens */
+}
+
+.rightArrow {
+  right: 10px;
+  /* Changed to ensure they stay within the screen on smaller screens */
+}
+
+/* Media Query for small screens (max-width: 470px) */
+@media (max-width: 300px) {
+
+  .leftArrow,
+  .rightArrow {
+    font-size: 20px;
+    /* Smaller arrows for small screens */
+    position: absolute;
+    /* Keep them positioned relative to their container */
+    top: 50%;
+    /* Center them vertically */
+    transform: translateY(-50%);
+    /* Adjust to truly center them */
+    z-index: 10;
+  }
+
+  .leftArrow {
+    left: 10px;
+    /* Position the left arrow on the left */
+  }
+
+  .rightArrow {
+    right: 10px;
+    /* Position the right arrow on the right */
+  }
+}
+
+/* Action Buttons */
+.actionButtons {
+  display: flex;
+  justify-content: flex-end;
+  /* Align the button to the left, adjust if needed */
+  padding: 16px;
+}
+
+.actionButton {
+  background-color: #f8f9fa;
+  /* Light gray background for a clean, subtle look */
+  color: #036;
+  /* Dark text for better readability */
+  font-size: 14px;
+  padding: 10px 18px;
+  border: 1px solid #ced4da;
+  /* Light border for definition */
+  border-radius: 4px;
+  /* Slightly rounded corners */
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.actionButton:hover {
+  background-color: #e9ecef;
+  /* Slightly darker gray when hovered */
+  border-color: #adb5bd;
+  /* Darker border when hovered */
+}
+
+.actionButton:focus {
+  outline: none;
+  border-color: #80bdff;
+  /* Light blue border when focused */
+}
+
+.actionButton:disabled {
+  background-color: #f1f3f5;
+  /* Very light gray when disabled */
+  color: #6c757d;
+  /* Gray text */
+  cursor: not-allowed;
+  border-color: #dee2e6;
+  /* Light border when disabled */
+}
+
+/* styles/AddProductModal.module.css */
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background-color: #fff;
+  padding: 30px;
+  width: 90%;
+  max-width: 500px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.modalContent h3 {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.inputField {
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+.inputField:focus {
+  border-color: #4a90e2;
+}
+
+/* Flex container for buttons */
+.buttonContainer {
+  display: flex;
+  justify-content: space-between;
+  /* Space them out evenly */
+  gap: 10px;
+  /* Add a little space between the buttons */
+  width: 100%;
+}
+
+/* Button Styling */
+.saveBtn,
+.cancelBtn {
+  padding: 8px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 30px;
+  /* Rounded corners for a modern look */
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  width: 48%;
+  /* Make both buttons the same size */
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+.saveBtn {
+  background-color: #007BFF;
+  /* A modern blue */
+  color: white;
+}
+
+.saveBtn:hover {
+  background-color: #0056b3;
+  /* Darker blue on hover */
+  transform: scale(1.05);
+  /* Slightly enlarge the button when hovered */
+}
+
+.cancelBtn {
+  background-color: #F8D7DA;
+  /* Soft red background */
+  color: #721C24;
+  /* Dark red text */
+}
+
+.cancelBtn:hover {
+  background-color: #f5c6cb;
+  /* Lighter red on hover */
+  transform: scale(1.05);
+}
+
+/* Focus state */
+.saveBtn:focus,
+.cancelBtn:focus {
+  outline: none;
+  /* Remove default outline */
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  /* Add a blue focus border for better accessibility */
+}
+
+@media (max-width: 500px) {
+  .modalContent {
+    width: 95%;
+    padding: 20px;
+  }
+
+  .inputField {
+    font-size: 16px;
+  }
+
+  .saveBtn,
+  .cancelBtn {
+    font-size: 18px;
+  }
+}
+
+/* Add styles for the action buttons (Edit & Delete) */
+/* styles/ProductForm.module.css */
+.productCard {
+  position: relative;
+  /* Your existing styling for the product card */
+  transition: background-color 0.3s ease;
+}
+
+.productActions {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 10px;
+  z-index: 10;
+  /* Ensure the buttons are above the image */
+}
+
+.editButton,
+.deleteButton {
+  background-color: rgba(255, 255, 255, 0.7);
+  border: none;
+  border-radius: 50%;
+  padding: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.editButton:hover {
+  background-color: #007bff;
+  transform: scale(1.1);
+  /* Slightly enlarge on hover */
+}
+
+.deleteButton:hover {
+  background-color: #ff0000;
+  transform: scale(1.1);
+}
+
+/* Add some focus effects for better accessibility */
+.editButton:focus,
+.deleteButton:focus {
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Optional: Add a background overlay when hovering over the product card */
+.productCard:hover {
+  background-color: #f8f8f8;
+}
+
+.editButton svg,
+.deleteButton svg {
+  margin-right: 5px;
+  /* Space between icon and text */
+}
+
+.footer {
+  justify-content: center;
+  align-items: center;
+  padding: 15px;
+  background-color: #003366;
+  color: white;
+  font-size: 14px;
+  width: 100%;
+  bottom: 0;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 30px;
 }
