@@ -1,0 +1,129 @@
+.container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: auto;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .container {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+    }
+
+    .leftColumn,
+    .rightColumn {
+        text-align: center;
+    }
+
+    .productImage {
+        max-height: 150px;
+        margin-top: 1rem;
+    }
+
+    .productName {
+        font-size: 1.5rem;
+    }
+
+    .category {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .description {
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .ratingSection {
+        margin-top: 0.5rem;
+    }
+
+    .stars {
+        margin-right: 0.3rem;
+    }
+
+    .reviewInfo {
+        font-size: 0.8rem;
+    }
+}
+
+/* Additional adjustments for very small screens (phones in portrait) */
+@media (max-width: 480px) {
+    .productName {
+        font-size: 1.2rem;
+    }
+
+    .category {
+        font-size: 0.9rem;
+    }
+
+    .description {
+        font-size: 0.8rem;
+    }
+
+    .ratingSection {
+        justify-content: center;
+    }
+
+    .stars {
+        font-size: 1.2rem;
+    }
+
+    .reviewInfo {
+        font-size: 0.7rem;
+    }
+}
+
+.leftColumn {
+    text-align: left;
+}
+
+.productName {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #111;
+}
+
+.category {
+    font-size: 1.2rem;
+    color: #888;
+    margin-bottom: 1rem;
+}
+
+.productImage {
+    max-height: 200px;
+    border-radius: 10px;
+    margin-top: 1rem;
+}
+
+.rightColumn {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.description {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #555;
+}
+
+.ratingSection {
+    display: flex;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.stars {
+    color: #f5b50a;
+    margin-right: 0.5rem;
+}
+
+.reviewInfo {
+    font-size: 0.9rem;
+    color: #888;
+}

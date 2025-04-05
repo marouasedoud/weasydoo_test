@@ -1,0 +1,69 @@
+/* Navbar Styles */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 20px;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 30px;
+    margin-top: 10px;
+    padding-bottom: 20px;
+    /* Adds space below the navbar */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* Small shadow below the line */
+    background-color: white;
+    /* Ensures shadow is visible */
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* Logo Styles */
+.logo {
+    height: 40px;
+    cursor: pointer;
+}
+
+/* Auth Section Styles */
+.auth-section {
+    display: flex;
+    align-items: center;
+}
+
+.welcome-message {
+    margin-right: 10px;
+    color: #003366;
+    font-weight: 500;
+}
+
+/* Button Styles */
+.auth-button {
+    background: linear-gradient(145deg, #3B82F6, #2563EB);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.auth-button:hover {
+    background: linear-gradient(145deg, #2563EB, #1D4ED8);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.auth-button:active {
+    background: #1D4ED8;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    transform: translateY(1px);
+}
+
+.logout-button {
+    margin-left: 10px;
+}
+
+.login-button {
+    margin-left: 0;
+}
