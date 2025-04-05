@@ -10,22 +10,26 @@ const ProductDetail = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
 
+  const fetchProductsFromCache = (key) => {
+    const cachedData = localStorage.getItem(key);
+    return cachedData ? JSON.parse(cachedData) : null;
+  };
+
+  const storeProductsInCache = (key, data) => {
+    localStorage.setItem(key, JSON.stringify(data));
+  };
+
   useEffect(() => {
     if (!id) return;
-
+  
     const fetchProductDetails = async () => {
-      try {
-        const response = await fetch(`https://fakestoreapi.com/products/${id}`);
-        if (!response.ok) throw new Error("Product not found");
-        const data = await response.json();
-        setProduct(data);
-      } catch (err) {
-        console.error(err.message);
-      }
+      const cacheKey = `product_${id}`;
+      const cachedProduct = fetchProductsFromCache(cacheKey);
+      setProduct(cachedProduct);
     };
-
+  
     fetchProductDetails();
-  }, [id]);
+  }, [id]);  
 
   if (!product) return <div>Loading...</div>;
 
