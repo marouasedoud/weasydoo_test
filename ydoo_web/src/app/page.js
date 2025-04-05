@@ -33,12 +33,27 @@ export default function Home() {
 
   const fetchProductsFromCache = (key) => {
     const cachedData = localStorage.getItem(key);
+    if (!cachedData && key.startsWith("product_")) {
+      // Try fallback to just product by ID if not stored under other keys
+      const id = key.split("_")[1];
+      const productData = localStorage.getItem(`product_${id}`);
+      return productData ? JSON.parse(productData) : null;
+    }
     return cachedData ? JSON.parse(cachedData) : null;
   };
-
+  
   const storeProductsInCache = (key, data) => {
     localStorage.setItem(key, JSON.stringify(data));
-  };
+    
+    // Also store individual product data
+    if (Array.isArray(data)) {
+      data.forEach(product => {
+        localStorage.setItem(`product_${product.id}`, JSON.stringify(product));
+      });
+    } else if (data?.id) {
+      localStorage.setItem(`product_${data.id}`, JSON.stringify(data));
+    }
+  };  
 
   const clearCache = () => {
     localStorage.clear();
@@ -99,7 +114,8 @@ export default function Home() {
 
     if (cachedProducts) {
       const deletedProducts = getDeletedProducts();
-      const filteredProducts = cachedProducts.filter(product => !deletedProducts.includes(product.id));
+      const productsArray = Array.isArray(cachedProducts) ? cachedProducts : [cachedProducts];
+      const filteredProducts = productsArray.filter(product => !deletedProducts.includes(product.id));
       setProducts(filteredProducts);
 
       if (searchId && selectedCategory && filteredProducts[0]?.category !== selectedCategory) {
