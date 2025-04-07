@@ -311,18 +311,6 @@ a.secondary {
   transform: scale(1.05);
 }
 
-.discountBadge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: #ff4d4d;
-  color: white;
-  padding: 5px 10px;
-  font-size: 12px;
-  border-radius: 15px;
-  font-weight: bold;
-}
-
 .productDetails {
   padding: 10px;
 }
@@ -335,12 +323,6 @@ a.secondary {
 .productPrice {
   font-size: 16px;
   font-weight: bold;
-}
-
-.originalPrice {
-  font-size: 14px;
-  text-decoration: line-through;
-  color: #888;
 }
 
 .paginationContainer {

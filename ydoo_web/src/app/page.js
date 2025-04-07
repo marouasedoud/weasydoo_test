@@ -316,9 +316,6 @@ export default function Home() {
           {displayedProducts.length > 0 ? (
             displayedProducts.map((product) => (
               <div key={product.id} className={styles.productCard}>
-                {product.discount && (
-                  <span className={styles.discountBadge}>{product.discount}%</span>
-                )}
                 <img
                   onClick={() => router.push(`/product/${product.id}`)}
                   src={product.image}
@@ -331,9 +328,6 @@ export default function Home() {
                   <p className={styles.productPrice}>
                     <strong>{product.price.toFixed(2)} $</strong>
                   </p>
-                  {product.originalPrice && (
-                    <p className={styles.originalPrice}>{product.originalPrice.toFixed(2)} $</p>
-                  )}
                 </div>
 
                 {/* Edit and Delete buttons for each product */}
@@ -354,6 +348,7 @@ export default function Home() {
           )}
         </div>
       </div>
+
       <div className={styles.footer}>
         <p>© 2025 Maroua Sedoud. All rights reserved.</p>
         <button onClick={clearCache} className={styles.actionButton}>Clear Cached Data</button>

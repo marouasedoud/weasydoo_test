@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TextInput, Image, StyleSheet, TouchableOpacity, ScrollView, Button } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { FontAwesome } from '@expo/vector-icons';  // Correct import for Expo
 
 const categories = ["electronics", "jewelery", "men's clothing", "women's clothing"];
 
@@ -9,6 +10,9 @@ export default function HomeScreen() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [products, setProducts] = useState([]);
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const limit = 5;
+  const totalPages = Math.ceil(20 / limit);
 
   const handleCategorySelect = (category) => {
     setSelectedCategory(category);
@@ -24,7 +28,6 @@ export default function HomeScreen() {
     try {
       const cachedData = await AsyncStorage.getItem(key);
       if (!cachedData && key.startsWith("product_")) {
-        // Try fallback to just product by ID if not stored under other keys
         const id = key.split("_")[1];
         const productData = await AsyncStorage.getItem(`product_${id}`);
         return productData ? JSON.parse(productData) : null;
@@ -49,8 +52,6 @@ export default function HomeScreen() {
   const storeProductsInCache = async (key, data) => {
     try {
       await AsyncStorage.setItem(key, JSON.stringify(data));
-      
-      // Also store individual product data
       if (Array.isArray(data)) {
         data.forEach(product => {
           AsyncStorage.setItem(`product_${product.id}`, JSON.stringify(product));
@@ -64,7 +65,7 @@ export default function HomeScreen() {
   };
 
   const fetchData = async () => {
-    let cacheKey = searchId ? `product_${searchId}` : selectedCategory ? `category_${selectedCategory}` : `page_1`;
+    let cacheKey = searchId ? `product_${searchId}` : selectedCategory ? `category_${selectedCategory}` : `page_${page}`;
 
     const cachedProducts = await fetchProductsFromCache(cacheKey);
     if (cachedProducts) {
@@ -85,7 +86,7 @@ export default function HomeScreen() {
       } else if (selectedCategory) {
         url = `https://fakestoreapi.com/products/category/${selectedCategory}`;
       } else {
-        url = `https://fakestoreapi.com/products?limit=10`; // Use pagination if needed
+        url = `https://fakestoreapi.com/products?limit=${limit * page}`;
       }
 
       try {
@@ -113,9 +114,8 @@ export default function HomeScreen() {
 
   useEffect(() => {
     fetchData();
-  }, [searchId, selectedCategory]);
+  }, [searchId, selectedCategory, page]);
 
-  const limit = 10;
   let displayedProducts = [];
   if (error === "Product does not belong to the selected category") {
     displayedProducts = [];
@@ -123,106 +123,241 @@ export default function HomeScreen() {
     displayedProducts = searchId || selectedCategory ? products : products.slice(-limit);
   }
 
+  const clearCache = async () => {
+    try {
+      await AsyncStorage.clear(); // Clear all stored data
+      setProducts([]);
+      setSearchId("");
+      setSelectedCategory("");
+      setError(null);
+      fetchData(); // Re-fetch your data
+    } catch (e) {
+      console.error("Failed to clear cache", e);
+    }
+  };  
+
   return (
-    <View style={styles.container}>
-      <View style={styles.categorySearchContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollView}>
-          <View style={styles.categoryButtons}>
-            {categories.map((category) => (
-              <TouchableOpacity
-                key={category}
-                onPress={() => handleCategorySelect(category)}
-                style={[styles.categoryButton, selectedCategory === category && styles.active]}
-              >
-                <Text style={styles.categoryButtonText}>{category}</Text>
-              </TouchableOpacity>
-            ))}
+    <ScrollView style={styles.container} contentContainerStyle={styles.scrollViewContent}>
+      <View style={styles.innerContainer}>
+        <View style={styles.categorySearchContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollView}>
+            <View style={styles.categoryButtons}>
+              {categories.map((category) => (
+                <TouchableOpacity
+                  key={category}
+                  onPress={() => handleCategorySelect(category)}
+                  style={[styles.categoryButton, selectedCategory === category && styles.active]}
+                >
+                  <Text style={styles.categoryButtonText}>{category}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+  
+            <View style={styles.searchSection}>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search by Product ID"
+                value={searchId}
+                onChangeText={setSearchId}
+                keyboardType="numeric"
+              />
+              {(searchId || selectedCategory) && (
+                <TouchableOpacity onPress={handleReset} style={styles.resetButton}>
+                  <Text style={styles.resetButtonText}>Reset</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </ScrollView>
+        </View>
+  
+        {error && <Text style={styles.errorMessage}>{error}</Text>}
+  
+        <View style={styles.productsContainer}>
+          {displayedProducts.length > 0 ? (
+            displayedProducts.map(product => (
+              <View key={product.id} style={styles.productCard}>
+                <TouchableOpacity onPress={() => console.log('Navigate to product details')}>
+                  <View style={styles.productImageContainer}>
+                    <Image
+                      source={{ uri: product.image }}
+                      style={styles.productImage}
+                      resizeMode="contain"
+                    />
+                  </View>
+                </TouchableOpacity>
+                <View style={styles.productDetails}>
+                  <Text style={styles.productCategory}>{product.category}</Text>
+                  <Text style={styles.productTitle}>{product.title}</Text>
+                  <Text style={styles.productPrice}>{product.price.toFixed(2)} $</Text>
+                </View>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.noProducts}>No products found!</Text>
+          )}
+        </View>
+  
+        {!(searchId || selectedCategory) && (
+            <>
+          <View style={styles.arrowContainer}>
+            <TouchableOpacity
+              onPress={() => setPage(page - 1)}
+              disabled={page <= 1}
+              style={[styles.arrowButton, page <= 1 && styles.disabledButton]}
+            >
+              <FontAwesome name="angle-left" size={50} color={page <= 1 ? '#ddd' : '#036'} />
+            </TouchableOpacity>
+  
+            <TouchableOpacity
+              onPress={() => setPage(page + 1)}
+              disabled={page >= totalPages}
+              style={[styles.arrowButton, page >= totalPages && styles.disabledButton]}
+            >
+              <FontAwesome name="angle-right" size={50} color={page >= 10 ? '#ddd' : '#036'} />
+            </TouchableOpacity>
           </View>
-
-          <View style={styles.searchSection}>
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search by Product ID"
-              value={searchId}
-              onChangeText={setSearchId}
-              keyboardType="numeric"
-            />
-            {(searchId || selectedCategory) && (
-              <TouchableOpacity onPress={handleReset} style={styles.resetButton}>
-                <Text style={styles.resetButtonText}>Reset</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        </ScrollView>
-      </View>
-
-      {error && <Text style={styles.errorMessage}>{error}</Text>}
-
-      <View>
-        {displayedProducts.map(product => (
-          <Text key={product.id}>{product.title}</Text>
-        ))}
-      </View>
-    </View>
+            <TouchableOpacity onPress={clearCache} style={styles.actionButton}>
+                <Text style={styles.buttonText}>Clear Cached Data</Text>
+            </TouchableOpacity>
+            </>
+        )}
+        </View>
+    </ScrollView>
   );
+  
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  categorySearchContainer: {
-    width: '100%',
-    maxWidth: 1200,
-    marginBottom: 20,
-  },
-  scrollView: {
+scrollView: {
     paddingBottom: 10,
-  },
-  categoryButtons: {
+},
+categoryButtons: {
     flexDirection: 'row',
     gap: 10,
-  },
-  categoryButton: {
+},
+categoryButton: {
     padding: 10,
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#036',
     borderRadius: 8,
-    cursor: 'pointer',
-  },
-  active: {
+},
+active: {
     backgroundColor: '#2563EB',
     color: 'white',
-  },
-  categoryButtonText: {
+},
+categoryButtonText: {
     color: '#036',
-  },
-  searchSection: {
+},
+searchSection: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-  },
-  searchInput: {
+},
+searchInput: {
     padding: 10,
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 8,
     width: 250,
-  },
-  resetButton: {
+},
+resetButton: {
     padding: 10,
     backgroundColor: '#ddd',
     borderRadius: 8,
-  },
-  resetButtonText: {
+},
+resetButtonText: {
     color: '#036',
+},
+container: {
+    flex: 1,
+    padding: 5,
+  },
+  categorySearchContainer: {
+    width: '100%',
+    marginBottom: 20,
   },
   errorMessage: {
     color: '#f44336',
     fontSize: 14,
   },
-});
+  productsContainer: {
+    flex: 1,
+    alignItems: 'center', // Align items to the center horizontally
+  },
+  productCard: {
+    width: '100%', // Full width of the container
+    marginVertical: 10,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    textAlign: 'center',
+    overflow: 'hidden',
+    elevation: 5,
+  },
+  productImageContainer: {
+    width: '100%',
+    height: 150,
+    backgroundColor: '#f9f9f9',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  productImage: {
+    width: '100%',
+    height: '100%',
+  },
+  productDetails: {
+    padding: 10,
+  },
+  productCategory: {
+    fontSize: 12,
+    color: '#888',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 5,
+  },
+  productTitle: {
+    fontSize: 14,
+    color: '#333',
+  },
+  productPrice: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  noProducts: {
+    fontSize: 16,
+    color: '#888',
+    textAlign: 'center',
+  },
+  arrowContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 20,
+    width: '100%',
+  },
+  arrowButton: {
+    padding: 10,
+  },
+  disabledButton: {
+    opacity: 0.5,
+  },
+  actionButton: {
+    backgroundColor: "#ff5c5c",
+    padding: 10,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  scrollViewContent: {
+    paddingBottom: 30,
+  },
+  
+  innerContainer: {
+    flexGrow: 1,
+  },  
+});  
