@@ -1,0 +1,63 @@
+# node_modules (dependencies)
+node_modules/
+
+# Expo specific files
+.expo/
+.expo-shared/
+
+# macOS system files
+.DS_Store
+
+# Android/Gradle
+android/.gradle/
+android/app/build/
+android/build/
+
+# iOS/Xcode
+ios/build/
+ios/Pods/
+ios/Podfile.lock
+ios/*.xcworkspace
+ios/*.xcodeproj
+ios/*.xcuserstate
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+expo-debug.log
+
+# Operating system files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDE/editor folders
+.vscode/
+.idea/
+
+# Environment variable files
+.env
+.env.*  # if you have env.staging, env.production, etc.
+
+# Watchman
+.watchmanconfig
+
+# Babel cache
+babel-cache/
+.babelrc
+
+# Metro bundler cache
+.cache/
+metro-cache/
+
+# TypeScript
+*.tsbuildinfo
+
+# Expo web build (if using web)
+web-build/
+dist/
+
+# Misc
+*.swp
+*.swo
