@@ -9,7 +9,8 @@ import {
   ScrollView,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { FontAwesome } from "@expo/vector-icons"; // Correct import for Expo
+import { FontAwesome } from "@expo/vector-icons";
+import NavBar from "../components/NavBar";
 
 const categories = [
   "electronics",
@@ -172,124 +173,135 @@ export default function HomeScreen({ navigation }) {
   };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.scrollViewContent}
-    >
-      <View style={styles.innerContainer}>
-        <View style={styles.categorySearchContainer}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.scrollView}
-          >
-            <View style={styles.categoryButtons}>
-              {categories.map((category) => (
+    <>
+      <NavBar />
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.scrollViewContent}
+      >
+        <View style={styles.innerContainer}>
+          <View style={styles.categorySearchContainer}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.scrollView}
+            >
+              <View style={styles.categoryButtons}>
+                {categories.map((category) => (
+                  <TouchableOpacity
+                    key={category}
+                    onPress={() => handleCategorySelect(category)}
+                    style={[
+                      styles.categoryButton,
+                      selectedCategory === category && styles.active,
+                    ]}
+                  >
+                    <Text style={styles.categoryButtonText}>{category}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <View style={styles.searchSection}>
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Search by Product ID"
+                  value={searchId}
+                  onChangeText={setSearchId}
+                  keyboardType="numeric"
+                />
+                {(searchId || selectedCategory) && (
+                  <TouchableOpacity
+                    onPress={handleReset}
+                    style={styles.resetButton}
+                  >
+                    <Text style={styles.resetButtonText}>Reset</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </ScrollView>
+          </View>
+
+          {error && <Text style={styles.errorMessage}>{error}</Text>}
+
+          <View style={styles.productsContainer}>
+            {displayedProducts.length > 0 ? (
+              displayedProducts.map((product) => (
+                <View key={product.id} style={styles.productCard}>
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.navigate("Products", {
+                        id: product.id,
+                      })
+                    }
+                  >
+                    <View style={styles.productImageContainer}>
+                      <Image
+                        source={{ uri: product.image }}
+                        style={styles.productImage}
+                        resizeMode="contain"
+                      />
+                    </View>
+                  </TouchableOpacity>
+                  <View style={styles.productDetails}>
+                    <Text style={styles.productCategory}>
+                      {product.category}
+                    </Text>
+                    <Text style={styles.productTitle}>{product.title}</Text>
+                    <Text style={styles.productPrice}>
+                      {product.price.toFixed(2)} $
+                    </Text>
+                  </View>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.noProducts}>No products found!</Text>
+            )}
+          </View>
+
+          {!(searchId || selectedCategory) && (
+            <>
+              <View style={styles.arrowContainer}>
                 <TouchableOpacity
-                  key={category}
-                  onPress={() => handleCategorySelect(category)}
+                  onPress={() => setPage(page - 1)}
+                  disabled={page <= 1}
                   style={[
-                    styles.categoryButton,
-                    selectedCategory === category && styles.active,
+                    styles.arrowButton,
+                    page <= 1 && styles.disabledButton,
                   ]}
                 >
-                  <Text style={styles.categoryButtonText}>{category}</Text>
+                  <FontAwesome
+                    name="angle-left"
+                    size={50}
+                    color={page <= 1 ? "#ddd" : "#036"}
+                  />
                 </TouchableOpacity>
-              ))}
-            </View>
 
-            <View style={styles.searchSection}>
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Search by Product ID"
-                value={searchId}
-                onChangeText={setSearchId}
-                keyboardType="numeric"
-              />
-              {(searchId || selectedCategory) && (
                 <TouchableOpacity
-                  onPress={handleReset}
-                  style={styles.resetButton}
+                  onPress={() => setPage(page + 1)}
+                  disabled={page >= totalPages}
+                  style={[
+                    styles.arrowButton,
+                    page >= totalPages && styles.disabledButton,
+                  ]}
                 >
-                  <Text style={styles.resetButtonText}>Reset</Text>
+                  <FontAwesome
+                    name="angle-right"
+                    size={50}
+                    color={page >= 10 ? "#ddd" : "#036"}
+                  />
                 </TouchableOpacity>
-              )}
-            </View>
-          </ScrollView>
-        </View>
-
-        {error && <Text style={styles.errorMessage}>{error}</Text>}
-
-        <View style={styles.productsContainer}>
-          {displayedProducts.length > 0 ? (
-            displayedProducts.map((product) => (
-              <View key={product.id} style={styles.productCard}>
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.navigate("Products", {
-                      id: product.id,
-                    })
-                  }
-                >
-                  <View style={styles.productImageContainer}>
-                    <Image
-                      source={{ uri: product.image }}
-                      style={styles.productImage}
-                      resizeMode="contain"
-                    />
-                  </View>
-                </TouchableOpacity>
-                <View style={styles.productDetails}>
-                  <Text style={styles.productCategory}>{product.category}</Text>
-                  <Text style={styles.productTitle}>{product.title}</Text>
-                  <Text style={styles.productPrice}>
-                    {product.price.toFixed(2)} $
-                  </Text>
-                </View>
               </View>
-            ))
-          ) : (
-            <Text style={styles.noProducts}>No products found!</Text>
+              <TouchableOpacity
+                onPress={clearCache}
+                style={styles.actionButton}
+              >
+                <Text style={styles.buttonText}>Clear Cached Data</Text>
+              </TouchableOpacity>
+            </>
           )}
         </View>
-
-        {!(searchId || selectedCategory) && (
-          <>
-            <View style={styles.arrowContainer}>
-              <TouchableOpacity
-                onPress={() => setPage(page - 1)}
-                disabled={page <= 1}
-                style={[styles.arrowButton, page <= 1 && styles.disabledButton]}
-              >
-                <FontAwesome
-                  name="angle-left"
-                  size={50}
-                  color={page <= 1 ? "#ddd" : "#036"}
-                />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => setPage(page + 1)}
-                disabled={page >= totalPages}
-                style={[
-                  styles.arrowButton,
-                  page >= totalPages && styles.disabledButton,
-                ]}
-              >
-                <FontAwesome
-                  name="angle-right"
-                  size={50}
-                  color={page >= 10 ? "#ddd" : "#036"}
-                />
-              </TouchableOpacity>
-            </View>
-            <TouchableOpacity onPress={clearCache} style={styles.actionButton}>
-              <Text style={styles.buttonText}>Clear Cached Data</Text>
-            </TouchableOpacity>
-          </>
-        )}
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </>
   );
 }
 
