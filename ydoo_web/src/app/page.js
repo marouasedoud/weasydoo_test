@@ -536,7 +536,7 @@ export default function Home() {
       )}
 
       <div className={styles.footer}>
-        <p>© 2025 Maroua Sedoud. All rights reserved.</p>
+        <p>© 2025 All rights reserved.</p>
         <button onClick={clearCache} className={styles.actionButton}>
           Clear Cached Data
         </button>

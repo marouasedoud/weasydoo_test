@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Button,
+  Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FontAwesome } from "@expo/vector-icons";
@@ -199,6 +200,36 @@ export default function HomeScreen({ navigation, token }) {
     setIsEditModalOpen(false);
   };
 
+  const handleDelete = (productId) => {
+    Alert.alert(
+      "Confirm Deletion",
+      "Are you sure you want to delete this product?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "OK",
+          onPress: () => {
+            fetch(`https://fakestoreapi.com/products/${productId}`, {
+              method: "DELETE",
+            })
+              .then((res) => res.json())
+              .then(() => {
+                setProducts((prevProducts) =>
+                  prevProducts.filter((product) => product.id !== productId)
+                );
+              })
+              .catch(() => {
+                Alert.alert("Error", "Failed to delete product");
+              });
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <ScrollView
       style={styles.container}
@@ -277,6 +308,12 @@ export default function HomeScreen({ navigation, token }) {
                     >
                       <FontAwesome name="pencil" size={18} color="#036" />
                     </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.editButton}
+                      onPress={() => handleDelete(product.id)}
+                    >
+                      <FontAwesome name="trash" size={18} color="#B06347" />
+                    </TouchableOpacity>
                   </View>
                 )}
                 <TouchableOpacity
@@ -345,9 +382,9 @@ export default function HomeScreen({ navigation, token }) {
                 />
               </TouchableOpacity>
             </View>
-            <TouchableOpacity onPress={clearCache} style={styles.actionButton}>
+            {/* <TouchableOpacity onPress={clearCache} style={styles.actionButton}>
               <Text style={styles.buttonText}>Clear Cached Data</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </>
         )}
       </View>
