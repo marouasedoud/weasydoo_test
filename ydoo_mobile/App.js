@@ -1,6 +1,7 @@
 import React, { useRef, useState, useContext } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { StatusBar } from "react-native";
 import { AuthProvider } from "./context/AuthContext";
 import NavBar from "./components/NavBar";
 import HomeScreen from "./components/HomeScreen";
@@ -35,6 +36,9 @@ function AppNavigator() {
         setCurrentRoute(route ? route.name : null);
       }}
     >
+      {/* Ensure the status bar is visible with dark-content in bright mode */}
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+
       {currentRoute !== "Login" && (
         <NavBar token={token} username={username} logout={logout} />
       )}
