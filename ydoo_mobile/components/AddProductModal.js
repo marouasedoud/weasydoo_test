@@ -1,4 +1,3 @@
-// AddProductModal.js
 import React, { useState } from "react";
 import {
   View,
@@ -9,7 +8,6 @@ import {
   StyleSheet,
   Alert,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
 
 const AddProductModal = ({ visible, onClose, onSave }) => {
   const [newProduct, setNewProduct] = useState({
@@ -19,6 +17,15 @@ const AddProductModal = ({ visible, onClose, onSave }) => {
     description: "",
     image: "",
   });
+
+  const [categoryModalVisible, setCategoryModalVisible] = useState(false);
+
+  const categories = [
+    { label: "electronics", value: "electronics" },
+    { label: "jewelery", value: "jewelery" },
+    { label: "men's clothing", value: "men's clothing" },
+    { label: "women's clothing", value: "women's clothing" },
+  ];
 
   const handleSave = () => {
     const price = parseFloat(newProduct.price);
@@ -76,18 +83,47 @@ const AddProductModal = ({ visible, onClose, onSave }) => {
             }
             style={styles.input}
           />
-          <Picker
-            selectedValue={newProduct.category}
-            onValueChange={(itemValue) =>
-              setNewProduct({ ...newProduct, category: itemValue })
-            }
+
+          {/* Custom Category Picker */}
+          <TouchableOpacity
             style={styles.input}
+            onPress={() => setCategoryModalVisible(true)}
           >
-            <Picker.Item label="electronics" value="electronics" />
-            <Picker.Item label="jewelery" value="jewelery" />
-            <Picker.Item label="men's clothing" value="men's clothing" />
-            <Picker.Item label="women's clothing" value="women's clothing" />
-          </Picker>
+            <Text style={styles.inputText}>
+              {newProduct.category ? newProduct.category : "Select Category"}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Category Options Modal */}
+          <Modal visible={categoryModalVisible} transparent>
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Select Category</Text>
+                {categories.map((category) => (
+                  <TouchableOpacity
+                    key={category.value}
+                    onPress={() => {
+                      setNewProduct({
+                        ...newProduct,
+                        category: category.value,
+                      });
+                      setCategoryModalVisible(false);
+                    }}
+                    style={styles.option}
+                  >
+                    <Text style={styles.optionText}>{category.label}</Text>
+                  </TouchableOpacity>
+                ))}
+                <TouchableOpacity
+                  onPress={() => setCategoryModalVisible(false)}
+                  style={styles.cancelBtn}
+                >
+                  <Text style={styles.btnText}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+
           <TextInput
             placeholder="Description"
             value={newProduct.description}
@@ -120,14 +156,6 @@ const AddProductModal = ({ visible, onClose, onSave }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  actionButtons: {
-    alignItems: "flex-end",
-    marginBottom: 10,
-  },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.7)",
@@ -153,6 +181,16 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
     marginBottom: 10,
+  },
+  inputText: {
+    color: "#333",
+  },
+  option: {
+    padding: 10,
+  },
+  optionText: {
+    fontSize: 16,
+    color: "#333",
   },
   buttonContainer: {
     flexDirection: "row",
