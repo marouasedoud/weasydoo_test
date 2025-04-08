@@ -4,7 +4,7 @@ import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "./context/AuthContext";
 import { useRouter } from "next/navigation";
 import NavBar from "./components/navBar";
-import styles from './page.module.css';
+import styles from "./page.module.css";
 import { FaAngleLeft, FaAngleRight, FaEdit, FaTrashAlt } from "react-icons/fa";
 
 export default function Home() {
@@ -18,7 +18,12 @@ export default function Home() {
   const [searchId, setSearchId] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [error, setError] = useState(null);
-  const categories = ["electronics", "jewelery", "men's clothing", "women's clothing"];
+  const categories = [
+    "electronics",
+    "jewelery",
+    "men's clothing",
+    "women's clothing",
+  ];
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -41,19 +46,19 @@ export default function Home() {
     }
     return cachedData ? JSON.parse(cachedData) : null;
   };
-  
+
   const storeProductsInCache = (key, data) => {
     localStorage.setItem(key, JSON.stringify(data));
-    
+
     // Also store individual product data
     if (Array.isArray(data)) {
-      data.forEach(product => {
+      data.forEach((product) => {
         localStorage.setItem(`product_${product.id}`, JSON.stringify(product));
       });
     } else if (data?.id) {
       localStorage.setItem(`product_${data.id}`, JSON.stringify(data));
     }
-  };  
+  };
 
   const clearCache = () => {
     localStorage.clear();
@@ -85,7 +90,9 @@ export default function Home() {
       const categoryCacheKey = `category_${category}`;
       const cachedCategoryProducts = fetchProductsFromCache(categoryCacheKey);
       if (cachedCategoryProducts) {
-        const updatedCategoryProducts = cachedCategoryProducts.filter(product => product.id !== deletedProductId);
+        const updatedCategoryProducts = cachedCategoryProducts.filter(
+          (product) => product.id !== deletedProductId
+        );
         storeProductsInCache(categoryCacheKey, updatedCategoryProducts);
       }
     });
@@ -100,25 +107,41 @@ export default function Home() {
       const pageCacheKey = `page_${i}`;
       const cachedPageProducts = fetchProductsFromCache(pageCacheKey);
       if (cachedPageProducts) {
-        const updatedPageProducts = cachedPageProducts.filter(product => product.id !== deletedProductId);
+        const updatedPageProducts = cachedPageProducts.filter(
+          (product) => product.id !== deletedProductId
+        );
         storeProductsInCache(pageCacheKey, updatedPageProducts);
       }
     }
 
-    setProducts(prevProducts => prevProducts.filter(product => product.id !== deletedProductId));
+    setProducts((prevProducts) =>
+      prevProducts.filter((product) => product.id !== deletedProductId)
+    );
   };
 
   const fetchData = () => {
-    let cacheKey = searchId ? `product_${searchId}` : selectedCategory ? `category_${selectedCategory}` : `page_${page}`;
+    let cacheKey = searchId
+      ? `product_${searchId}`
+      : selectedCategory
+      ? `category_${selectedCategory}`
+      : `page_${page}`;
     const cachedProducts = fetchProductsFromCache(cacheKey);
 
     if (cachedProducts) {
       const deletedProducts = getDeletedProducts();
-      const productsArray = Array.isArray(cachedProducts) ? cachedProducts : [cachedProducts];
-      const filteredProducts = productsArray.filter(product => !deletedProducts.includes(product.id));
+      const productsArray = Array.isArray(cachedProducts)
+        ? cachedProducts
+        : [cachedProducts];
+      const filteredProducts = productsArray.filter(
+        (product) => !deletedProducts.includes(product.id)
+      );
       setProducts(filteredProducts);
 
-      if (searchId && selectedCategory && filteredProducts[0]?.category !== selectedCategory) {
+      if (
+        searchId &&
+        selectedCategory &&
+        filteredProducts[0]?.category !== selectedCategory
+      ) {
         setError("Product does not belong to the selected category");
       } else {
         setError(null);
@@ -141,12 +164,18 @@ export default function Home() {
         .then((data) => {
           const fetchedProducts = Array.isArray(data) ? data : [data];
           const deletedProducts = getDeletedProducts();
-          const filteredFetchedProducts = fetchedProducts.filter(product => !deletedProducts.includes(product.id));
-          
+          const filteredFetchedProducts = fetchedProducts.filter(
+            (product) => !deletedProducts.includes(product.id)
+          );
+
           setProducts(filteredFetchedProducts);
           storeProductsInCache(cacheKey, filteredFetchedProducts);
 
-          if (searchId && selectedCategory && filteredFetchedProducts[0]?.category !== selectedCategory) {
+          if (
+            searchId &&
+            selectedCategory &&
+            filteredFetchedProducts[0]?.category !== selectedCategory
+          ) {
             setError("Product does not belong to the selected category");
           } else {
             setError(null);
@@ -170,16 +199,18 @@ export default function Home() {
   };
 
   const handleDeleteProduct = (deletedProductId) => {
-    const isConfirmed = window.confirm("Are you sure you want to delete this product?");
+    const isConfirmed = window.confirm(
+      "Are you sure you want to delete this product?"
+    );
     if (isConfirmed) {
       deleteProductFromCache(deletedProductId);
       fetch(`https://fakestoreapi.com/products/${deletedProductId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       })
-      .then(response => response.json())
-      .then(data => {
-        console.log(data);
-      });
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+        });
     } else {
       console.log("Deletion canceled");
     }
@@ -203,14 +234,18 @@ export default function Home() {
           "Content-Type": "application/json",
         },
       })
-      .then((res) => res.json())
-      .then((updatedProduct) => {
-        setProducts(prevProducts => prevProducts.map(product => product.id === updatedProduct.id ? updatedProduct : product));
-        setIsEditModalOpen(false);
-      })
-      .catch((error) => {
-        console.error("Error updating product:", error);
-      });
+        .then((res) => res.json())
+        .then((updatedProduct) => {
+          setProducts((prevProducts) =>
+            prevProducts.map((product) =>
+              product.id === updatedProduct.id ? updatedProduct : product
+            )
+          );
+          setIsEditModalOpen(false);
+        })
+        .catch((error) => {
+          console.error("Error updating product:", error);
+        });
     }
   };
 
@@ -221,7 +256,7 @@ export default function Home() {
       alert("Please enter a valid price.");
       return;
     }
-  
+
     const newProductWithPrice = { ...newProduct, price };
     // Proceed with adding the product
     fetch("https://fakestoreapi.com/products", {
@@ -237,18 +272,19 @@ export default function Home() {
         setNewProduct({ title: "", price: "", category: "", image: "" });
         setIsAddModalOpen(false);
       });
-  };  
+  };
 
   let displayedProducts = [];
   if (error === "Product does not belong to the selected category") {
     displayedProducts = [];
   } else {
-    displayedProducts = searchId || selectedCategory ? products : products.slice(-limit);
+    displayedProducts =
+      searchId || selectedCategory ? products : products.slice(-limit);
   }
 
   return (
-    <div style={{ textAlign: "center"}}>
-      <NavBar/>
+    <div style={{ textAlign: "center" }}>
+      <NavBar />
       <div className={styles.productControls}>
         <div className={styles.categorySearchContainer}>
           <div className={styles.categoryButtons}>
@@ -256,7 +292,9 @@ export default function Home() {
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className={`${styles.categoryButton} ${selectedCategory === category ? styles.active : ''}`}
+                className={`${styles.categoryButton} ${
+                  selectedCategory === category ? styles.active : ""
+                }`}
               >
                 {category}
               </button>
@@ -273,23 +311,92 @@ export default function Home() {
               className={styles.searchInput}
             />
             {(searchId || selectedCategory) && (
-              <button onClick={handleReset} className={styles.resetButton}>Reset</button>
+              <button onClick={handleReset} className={styles.resetButton}>
+                Reset
+              </button>
             )}
           </div>
         </div>
         {error && <p className={styles.errorMessage}>{error}</p>}
       </div>
-      
+
       <div className={styles.actionButtons}>
         {token && (
-          <button 
-            onClick={handleAddProduct} 
-            className={styles.actionButton}
-          >
+          <button onClick={handleAddProduct} className={styles.actionButton}>
             Add Item
           </button>
         )}
       </div>
+
+      {isAddModalOpen && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <h3>Add New Product</h3>
+            <input
+              type="text"
+              value={newProduct.title}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, title: e.target.value })
+              }
+              placeholder="Title"
+              className={styles.inputField}
+            />
+            <input
+              type="number"
+              min="0"
+              value={newProduct.price}
+              placeholder="Price"
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, price: e.target.value })
+              }
+              className={styles.inputField}
+            />
+            <select
+              value={newProduct.category}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, category: e.target.value })
+              }
+              className={styles.inputField}
+            >
+              <option value="electronics">electronics</option>
+              <option value="jewelery">jewelery</option>
+              <option value="men's clothing">men's clothing</option>
+              <option value="women's clothing">women's clothing</option>
+            </select>
+            <input
+              type="text"
+              value={newProduct.description}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, description: e.target.value })
+              }
+              placeholder="Description"
+              className={styles.inputField}
+            />
+            <input
+              type="text"
+              value={newProduct.image}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, image: e.target.value })
+              }
+              placeholder="Image URL"
+              className={styles.inputField}
+            />
+
+            {/* Button Container for Save & Cancel */}
+            <div className={styles.buttonContainer}>
+              <button onClick={handleSaveNewProduct} className={styles.saveBtn}>
+                Save
+              </button>
+              <button
+                onClick={() => setIsAddModalOpen(false)}
+                className={styles.cancelBtn}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className={styles.productGridWrapper}>
         {!(searchId || selectedCategory) && (
@@ -333,10 +440,16 @@ export default function Home() {
                 {/* Edit and Delete buttons for each product */}
                 {token && (
                   <div className={styles.productActions}>
-                    <button onClick={() => handleEditProduct(product)} className={styles.editButton}>
+                    <button
+                      onClick={() => handleEditProduct(product)}
+                      className={styles.editButton}
+                    >
                       <FaEdit />
                     </button>
-                    <button onClick={() => handleDeleteProduct(product.id)} className={styles.deleteButton}>
+                    <button
+                      onClick={() => handleDeleteProduct(product.id)}
+                      className={styles.deleteButton}
+                    >
                       <FaTrashAlt />
                     </button>
                   </div>
@@ -349,11 +462,6 @@ export default function Home() {
         </div>
       </div>
 
-      <div className={styles.footer}>
-        <p>© 2025 Maroua Sedoud. All rights reserved.</p>
-        <button onClick={clearCache} className={styles.actionButton}>Clear Cached Data</button>
-      </div>
-
       {isEditModalOpen && (
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
@@ -361,7 +469,9 @@ export default function Home() {
             <input
               type="text"
               value={editedProduct?.title || ""}
-              onChange={(e) => setEditedProduct({ ...editedProduct, title: e.target.value })}
+              onChange={(e) =>
+                setEditedProduct({ ...editedProduct, title: e.target.value })
+              }
               placeholder="Title"
               className={styles.inputField}
             />
@@ -369,13 +479,17 @@ export default function Home() {
               type="number"
               min="0"
               value={editedProduct?.price || ""}
-              onChange={(e) => setEditedProduct({ ...editedProduct, price: e.target.value })}
+              onChange={(e) =>
+                setEditedProduct({ ...editedProduct, price: e.target.value })
+              }
               placeholder="Price"
               className={styles.inputField}
             />
             <select
               value={editedProduct?.category || ""}
-              onChange={(e) => setEditedProduct({ ...editedProduct, category: e.target.value })}
+              onChange={(e) =>
+                setEditedProduct({ ...editedProduct, category: e.target.value })
+              }
               className={styles.inputField}
             >
               <option value="electronics">electronics</option>
@@ -386,24 +500,34 @@ export default function Home() {
             <input
               type="text"
               value={editedProduct?.description || ""}
-              onChange={(e) => setEditedProduct({ ...editedProduct, description: e.target.value })}
+              onChange={(e) =>
+                setEditedProduct({
+                  ...editedProduct,
+                  description: e.target.value,
+                })
+              }
               placeholder="Description"
               className={styles.inputField}
             />
             <input
               type="text"
               value={editedProduct?.image || ""}
-              onChange={(e) => setEditedProduct({ ...editedProduct, image: e.target.value })}
+              onChange={(e) =>
+                setEditedProduct({ ...editedProduct, image: e.target.value })
+              }
               placeholder="Image URL"
               className={styles.inputField}
             />
-            
+
             {/* Button Container for Save & Cancel */}
             <div className={styles.buttonContainer}>
               <button onClick={handleSaveEdit} className={styles.saveBtn}>
                 Save Changes
               </button>
-              <button onClick={() => setIsEditModalOpen(false)} className={styles.cancelBtn}>
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className={styles.cancelBtn}
+              >
                 Cancel
               </button>
             </div>
@@ -411,62 +535,12 @@ export default function Home() {
         </div>
       )}
 
-      {isAddModalOpen && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
-            <h3>Add New Product</h3>
-            <input
-              type="text"
-              value={newProduct.title}
-              onChange={(e) => setNewProduct({ ...newProduct, title: e.target.value })}
-              placeholder="Title"
-              className={styles.inputField}
-            />
-            <input
-              type="number"
-              min="0"
-              value={newProduct.price}
-              placeholder="Price"
-              onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
-              className={styles.inputField}
-            />
-            <select
-              value={newProduct.category}
-              onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
-              className={styles.inputField}
-            >
-              <option value="electronics">electronics</option>
-              <option value="jewelery">jewelery</option>
-              <option value="men's clothing">men's clothing</option>
-              <option value="women's clothing">women's clothing</option>
-            </select>
-            <input
-              type="text"
-              value={newProduct.description}
-              onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
-              placeholder="Description"
-              className={styles.inputField}
-            />
-            <input
-              type="text"
-              value={newProduct.image}
-              onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
-              placeholder="Image URL"
-              className={styles.inputField}
-            />
-            
-            {/* Button Container for Save & Cancel */}
-            <div className={styles.buttonContainer}>
-              <button onClick={handleSaveNewProduct} className={styles.saveBtn}>
-                Save
-              </button>
-              <button onClick={() => setIsAddModalOpen(false)} className={styles.cancelBtn}>
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <div className={styles.footer}>
+        <p>© 2025 Maroua Sedoud. All rights reserved.</p>
+        <button onClick={clearCache} className={styles.actionButton}>
+          Clear Cached Data
+        </button>
+      </div>
     </div>
   );
 }

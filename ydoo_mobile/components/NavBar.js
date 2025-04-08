@@ -1,21 +1,19 @@
-import React, { useContext } from "react";
+import React from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { AuthContext } from "../context/AuthContext"; // Correct import of AuthContext
 
-const NavBar = () => {
-  const { token, username, logout } = useContext(AuthContext); // Use AuthContext here
+const NavBar = ({ token, username, logout }) => {
   const navigation = useNavigation();
 
   const handleLogoClick = () => {
-    navigation.navigate("Home"); // Or whatever your main screen is named
+    navigation.navigate("Home");
   };
 
   return (
     <View style={styles.navbar}>
       <TouchableOpacity onPress={handleLogoClick}>
         <Image
-          source={require("../assets/Weasydoo.png")} // Put the image in /assets folder
+          source={require("../assets/Weasydoo.png")}
           style={styles.logo}
           resizeMode="contain"
         />
@@ -53,7 +51,6 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     elevation: 3,
     alignItems: "center",
-    marginBottom: 20,
   },
   logo: {
     height: 40,

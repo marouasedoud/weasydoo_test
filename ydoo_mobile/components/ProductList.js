@@ -10,7 +10,6 @@ import {
 import { useRoute } from "@react-navigation/native";
 import { AntDesign } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import NavBar from "../components/NavBar";
 
 const ProductDetail = () => {
   const route = useRoute();
@@ -87,7 +86,6 @@ const ProductDetail = () => {
 
   return (
     <ScrollView>
-      <NavBar />
       <View style={styles.container}>
         <View style={styles.leftColumn}>
           <Text style={styles.productName}>{product.title}</Text>

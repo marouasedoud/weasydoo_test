@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect } from "react";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const AuthContext = createContext();
 
@@ -10,22 +10,20 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const loadAuthData = async () => {
       try {
-        const savedToken = await AsyncStorage.getItem('authToken');
-        const savedUsername = await AsyncStorage.getItem('username');
-  
+        const savedToken = await AsyncStorage.getItem("authToken");
+        const savedUsername = await AsyncStorage.getItem("username");
+
         if (savedToken && savedUsername) {
           setToken(savedToken);
           setUsername(savedUsername);
-        } else {
-          console.log("No saved auth data found.");
         }
       } catch (error) {
         console.error("Failed to load auth data:", error);
       }
     };
-  
+
     loadAuthData();
-  }, []);  
+  }, []);
 
   const login = async (username, password) => {
     try {
