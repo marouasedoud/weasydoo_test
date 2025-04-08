@@ -28,28 +28,32 @@ git clone https://github.com/marouasedoud/weasydoo_test.git
 
 ## React Native Expo App:
 
-1. To view in development mode, install the app on Android using the APK built with the following command (dev client):
+To view the app in development mode, the APK was built using Expo's **Development Client**.
 
-   ```bash
-   npx eas build --profile development --platform android
-   ```
+```bash
+npx eas build --profile development --platform android
+```
 
-2. Download the APK from this link:  
+No **need to execute the build command** , the APK is built and available for download.
+
+Here’s how to proceed:
+
+1. Download the APK from this link to view and test the app in development mode:  
    [Download APK](https://expo.dev/accounts/maroua_sedoud/projects/ydoo_mobile/builds/73dc898a-09c7-4b37-9a9b-4a3639483c1c)
 
-3. Open terminal and navigate to the mobile project folder:
+2. Open terminal and navigate to the mobile project folder:
    ```bash
    cd ydoo_mobile
    ```
-4. Install the dependencies:
+3. Install the dependencies:
    ```bash
    npm i
    ```
-5. Start Expo:
+4. Start Expo:
    ```bash
    npx expo start
    ```
-6. Press the “s” key on the keyboard to open the project in the emulator.
-7. Open the downloaded APK, then enter the displayed `exp://192.168.x.x:8081` in the input field.
+5. Press the “s” key on the keyboard to open the project in the emulator.
+6. Open the downloaded APK, then enter the displayed `exp://192.168.x.x:8081` in the input field.
 
 > **Note:** The app looks better in bright mode.
