@@ -137,6 +137,32 @@ export default function HomeScreen({ navigation, token }) {
         setProducts(filteredFetchedProducts);
         storeProductsInCache(cacheKey, filteredFetchedProducts);
 
+        // Pre-fetch next 3 pages after the first page is loaded
+        if (!searchId && !selectedCategory) {
+          for (let nextPage = page + 1; nextPage <= page + 3; nextPage++) {
+            const nextCacheKey = `page_${nextPage}`;
+            const cachedNext = await fetchProductsFromCache(nextCacheKey);
+
+            if (!cachedNext) {
+              try {
+                const nextResponse = await fetch(
+                  `https://fakestoreapi.com/products?limit=${limit * nextPage}`
+                );
+                const nextData = await nextResponse.json();
+                const cleanedNextData = nextData.filter(
+                  (product) => !deletedProducts.includes(product.id)
+                );
+                storeProductsInCache(nextCacheKey, cleanedNextData);
+              } catch (error) {
+                console.log(
+                  "Error prefetching page " + nextPage,
+                  error.message
+                );
+              }
+            }
+          }
+        }
+
         if (
           searchId &&
           selectedCategory &&
@@ -183,7 +209,14 @@ export default function HomeScreen({ navigation, token }) {
   };
 
   const handleProductSaved = (newProduct) => {
-    setProducts((prev) => [...prev, newProduct]);
+    setProducts((prev) => {
+      const middleIndex = Math.floor(prev.length / 2);
+      return [
+        ...prev.slice(0, middleIndex), // products before the middle
+        newProduct, // new product
+        ...prev.slice(middleIndex), // products after the middle
+      ];
+    });
   };
 
   const handleEditProduct = (product) => {
@@ -237,44 +270,38 @@ export default function HomeScreen({ navigation, token }) {
     >
       <View style={styles.innerContainer}>
         <View style={styles.categorySearchContainer}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.scrollView}
-          >
-            <View style={styles.categoryButtons}>
-              {categories.map((category) => (
-                <TouchableOpacity
-                  key={category}
-                  onPress={() => handleCategorySelect(category)}
-                  style={[
-                    styles.categoryButton,
-                    selectedCategory === category && styles.active,
-                  ]}
-                >
-                  <Text style={styles.categoryButtonText}>{category}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+          <View style={styles.categoryGrid}>
+            {categories.map((category) => (
+              <TouchableOpacity
+                key={category}
+                onPress={() => handleCategorySelect(category)}
+                style={[
+                  styles.categoryButtonGrid,
+                  selectedCategory === category && styles.active,
+                ]}
+              >
+                <Text style={styles.categoryButtonText}>{category}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
-            <View style={styles.searchSection}>
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Search by Product ID"
-                value={searchId}
-                onChangeText={setSearchId}
-                keyboardType="numeric"
-              />
-              {(searchId || selectedCategory) && (
-                <TouchableOpacity
-                  onPress={handleReset}
-                  style={styles.resetButton}
-                >
-                  <Text style={styles.resetButtonText}>Reset</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </ScrollView>
+          <View style={styles.searchSection}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search by Product ID"
+              value={searchId}
+              onChangeText={setSearchId}
+              keyboardType="numeric"
+            />
+            {(searchId || selectedCategory) && (
+              <TouchableOpacity
+                onPress={handleReset}
+                style={styles.resetButton}
+              >
+                <Text style={styles.resetButtonText}>Reset</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
         <View style={styles.AddContainer}>
@@ -362,8 +389,8 @@ export default function HomeScreen({ navigation, token }) {
               >
                 <FontAwesome
                   name="angle-left"
-                  size={50}
-                  color={page <= 1 ? "#ddd" : "#036"}
+                  size={36}
+                  color="white" // Make it 'white' so background shows through
                 />
               </TouchableOpacity>
 
@@ -377,14 +404,15 @@ export default function HomeScreen({ navigation, token }) {
               >
                 <FontAwesome
                   name="angle-right"
-                  size={50}
-                  color={page >= 10 ? "#ddd" : "#036"}
+                  size={36}
+                  color="white" // transparent-feel with colored box behind
                 />
               </TouchableOpacity>
             </View>
-            {/* <TouchableOpacity onPress={clearCache} style={styles.actionButton}>
+
+            <TouchableOpacity onPress={clearCache} style={styles.actionButton}>
               <Text style={styles.buttonText}>Clear Cached Data</Text>
-            </TouchableOpacity> */}
+            </TouchableOpacity>
           </>
         )}
       </View>
@@ -422,33 +450,18 @@ const styles = StyleSheet.create({
   categoryButtonText: {
     color: "#036",
   },
-  searchSection: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  searchInput: {
-    padding: 10,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    width: 250,
-  },
-  resetButton: {
-    padding: 10,
-    backgroundColor: "#ddd",
-    borderRadius: 8,
-  },
   resetButtonText: {
     color: "#036",
   },
   container: {
     flex: 1,
     padding: 5,
+    marginTop: 20,
   },
   categorySearchContainer: {
-    width: "100%",
+    width: "90%",
     marginBottom: 20,
+    alignSelf: "center",
   },
   errorMessage: {
     color: "#f44336",
@@ -470,7 +483,7 @@ const styles = StyleSheet.create({
   productImageContainer: {
     width: "100%",
     height: 150,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -501,19 +514,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#888",
     textAlign: "center",
-  },
-  arrowContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 20,
-    width: "100%",
-  },
-  arrowButton: {
-    padding: 10,
-  },
-  disabledButton: {
-    opacity: 0.5,
   },
   actionButton: {
     backgroundColor: "#ff5c5c",
@@ -548,5 +548,57 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     elevation: 3, // For shadow effect on Android
     marginLeft: 10, // To create gap between buttons (similar to 'gap' in CSS)
+  },
+  categoryGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    gap: 10,
+    marginBottom: 20,
+  },
+  categoryButtonGrid: {
+    width: "48%", // two per row
+    padding: 10,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#036",
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  searchSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  searchInput: {
+    flex: 1,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+  },
+  resetButton: {
+    padding: 10,
+    backgroundColor: "#ddd",
+    borderRadius: 8,
+  },
+  arrowContainer: {
+    flexDirection: "row",
+    justifyContent: "center", // center horizontally
+    alignItems: "center",
+    marginTop: 20,
+    gap: 20, // add spacing between buttons (RN 0.71+ supports `gap`)
+  },
+  arrowButton: {
+    width: 60,
+    height: 60,
+    backgroundColor: "#036",
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+    marginHorizontal: 10, // spacing between arrows
+  },
+  disabledButton: {
+    backgroundColor: "#ccc", // Lighter color when disabled
   },
 });

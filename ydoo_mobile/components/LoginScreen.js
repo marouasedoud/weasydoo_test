@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
@@ -64,14 +63,14 @@ export default function LoginScreen() {
 
             <TextInput
               style={styles.input}
-              placeholder="Username"
+              placeholder="johnd"
               value={username}
               onChangeText={setUsername}
               autoCapitalize="none"
             />
             <TextInput
               style={styles.input}
-              placeholder="Password"
+              placeholder="m38rmF$"
               value={password}
               onChangeText={setPassword}
               secureTextEntry

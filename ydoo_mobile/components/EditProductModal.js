@@ -40,13 +40,19 @@ const EditProductModal = ({ visible, onClose, onSave, product }) => {
   }, [product]);
 
   const handleSave = () => {
-    const price = parseFloat(editedProduct.price);
-    if (isNaN(price)) {
+    const { title, price, category, description, image } = editedProduct;
+    if (!title || !price || !category || !description || !image) {
+      Alert.alert("Missing Fields", "Please fill out all the fields.");
+      return;
+    }
+
+    const parcedPrice = parseFloat(editedProduct.price);
+    if (isNaN(parcedPrice)) {
       Alert.alert("Invalid Input", "Please enter a valid price.");
       return;
     }
 
-    const updatedProduct = { ...editedProduct, price };
+    const updatedProduct = { ...editedProduct, price: parcedPrice };
 
     fetch(`https://fakestoreapi.com/products/${product.id}`, {
       method: "PUT",

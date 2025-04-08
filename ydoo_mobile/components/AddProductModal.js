@@ -28,13 +28,19 @@ const AddProductModal = ({ visible, onClose, onSave }) => {
   ];
 
   const handleSave = () => {
-    const price = parseFloat(newProduct.price);
+    const { title, price, category, description, image } = newProduct;
+    if (!title || !price || !category || !description || !image) {
+      Alert.alert("Missing Fields", "Please fill out all the fields.");
+      return;
+    }
+
+    const parsedPrice = parseFloat(newProduct.price);
     if (isNaN(price)) {
       Alert.alert("Invalid Input", "Please enter a valid price.");
       return;
     }
 
-    const newProductWithPrice = { ...newProduct, price };
+    const newProductWithPrice = { ...newProduct, price: parsedPrice };
 
     fetch("https://fakestoreapi.com/products", {
       method: "POST",
