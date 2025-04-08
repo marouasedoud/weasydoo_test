@@ -15,21 +15,17 @@ const ProductDetail = () => {
     return cachedData ? JSON.parse(cachedData) : null;
   };
 
-  const storeProductsInCache = (key, data) => {
-    localStorage.setItem(key, JSON.stringify(data));
-  };
-
   useEffect(() => {
     if (!id) return;
-  
+
     const fetchProductDetails = async () => {
       const cacheKey = `product_${id}`;
       const cachedProduct = fetchProductsFromCache(cacheKey);
       setProduct(cachedProduct);
     };
-  
+
     fetchProductDetails();
-  }, [id]);  
+  }, [id]);
 
   if (!product) return <div>Loading...</div>;
 
