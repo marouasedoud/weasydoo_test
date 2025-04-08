@@ -56,4 +56,6 @@ Here’s how to proceed:
 5. Press the “s” key on the keyboard.
 6. Open the downloaded APK, then enter the displayed `exp://192.168.x.x:8081` in the input field.
 
+![Screenshot 2025-04-08 234657](https://github.com/user-attachments/assets/5d096f70-2dcc-4d34-b854-f985ed56beb1)
+
 > **Note:** The app looks better in bright mode.
