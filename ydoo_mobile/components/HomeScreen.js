@@ -12,6 +12,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { FontAwesome } from "@expo/vector-icons";
 import AddProductModal from "./AddProductModal";
+import EditProductModal from "./EditProductModal";
 
 const categories = [
   "electronics",
@@ -29,6 +30,8 @@ export default function HomeScreen({ navigation, token }) {
   const limit = 5;
   const totalPages = Math.ceil(20 / limit);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [updatingProduct, setUpdatingProduct] = useState(null);
 
   const handleCategorySelect = (category) => {
     setSelectedCategory(category);
@@ -182,6 +185,20 @@ export default function HomeScreen({ navigation, token }) {
     setProducts((prev) => [...prev, newProduct]);
   };
 
+  const handleEditProduct = (product) => {
+    setIsEditModalOpen(true);
+    setUpdatingProduct(product);
+  };
+
+  const handleEditProductSaved = (updatedProduct) => {
+    setProducts((prevProducts) =>
+      prevProducts.map((product) =>
+        product.id === updatedProduct.id ? updatedProduct : product
+      )
+    );
+    setIsEditModalOpen(false);
+  };
+
   return (
     <ScrollView
       style={styles.container}
@@ -252,6 +269,16 @@ export default function HomeScreen({ navigation, token }) {
           {displayedProducts.length > 0 ? (
             displayedProducts.map((product) => (
               <View key={product.id} style={styles.productCard}>
+                {token && (
+                  <View style={styles.productActions}>
+                    <TouchableOpacity
+                      style={styles.editButton}
+                      onPress={() => handleEditProduct(product)}
+                    >
+                      <FontAwesome name="pencil" size={18} color="#036" />
+                    </TouchableOpacity>
+                  </View>
+                )}
                 <TouchableOpacity
                   onPress={() =>
                     navigation.navigate("Products", {
@@ -280,6 +307,13 @@ export default function HomeScreen({ navigation, token }) {
             <Text style={styles.noProducts}>No products found!</Text>
           )}
         </View>
+
+        <EditProductModal
+          visible={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onSave={handleEditProductSaved}
+          product={updatingProduct}
+        />
 
         {!(searchId || selectedCategory) && (
           <>
@@ -461,5 +495,21 @@ const styles = StyleSheet.create({
 
   innerContainer: {
     flexGrow: 1,
+  },
+  productActions: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    flexDirection: "row",
+    zIndex: 10,
+  },
+  editButton: {
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
+    borderRadius: 50,
+    padding: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 3, // For shadow effect on Android
+    marginLeft: 10, // To create gap between buttons (similar to 'gap' in CSS)
   },
 });

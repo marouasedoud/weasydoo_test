@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,8 +9,8 @@ import {
   Alert,
 } from "react-native";
 
-const AddProductModal = ({ visible, onClose, onSave }) => {
-  const [newProduct, setNewProduct] = useState({
+const EditProductModal = ({ visible, onClose, onSave, product }) => {
+  const [editedProduct, setEditedProduct] = useState({
     title: "",
     price: "",
     category: "electronics",
@@ -27,32 +27,37 @@ const AddProductModal = ({ visible, onClose, onSave }) => {
     { label: "women's clothing", value: "women's clothing" },
   ];
 
+  useEffect(() => {
+    if (product) {
+      setEditedProduct({
+        title: product.title,
+        price: product.price.toString(),
+        category: product.category,
+        description: product.description,
+        image: product.image,
+      });
+    }
+  }, [product]);
+
   const handleSave = () => {
-    const price = parseFloat(newProduct.price);
+    const price = parseFloat(editedProduct.price);
     if (isNaN(price)) {
       Alert.alert("Invalid Input", "Please enter a valid price.");
       return;
     }
 
-    const newProductWithPrice = { ...newProduct, price };
+    const updatedProduct = { ...editedProduct, price };
 
-    fetch("https://fakestoreapi.com/products", {
-      method: "POST",
+    fetch(`https://fakestoreapi.com/products/${product.id}`, {
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(newProductWithPrice),
+      body: JSON.stringify(updatedProduct),
     })
       .then((res) => res.json())
       .then((data) => {
         onSave(data);
-        setNewProduct({
-          title: "",
-          price: "",
-          category: "",
-          description: "",
-          image: "",
-        });
         onClose();
       })
       .catch(() => {
@@ -64,33 +69,35 @@ const AddProductModal = ({ visible, onClose, onSave }) => {
     <Modal visible={visible} animationType="fade" transparent>
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Add New Product</Text>
+          <Text style={styles.modalTitle}>Edit Product</Text>
 
           <TextInput
             placeholder="Title"
-            value={newProduct.title}
+            value={editedProduct.title}
             onChangeText={(text) =>
-              setNewProduct({ ...newProduct, title: text })
+              setEditedProduct({ ...editedProduct, title: text })
             }
             style={styles.input}
           />
           <TextInput
             placeholder="Price"
             keyboardType="numeric"
-            value={newProduct.price}
+            value={editedProduct.price}
             onChangeText={(text) =>
-              setNewProduct({ ...newProduct, price: text })
+              setEditedProduct({ ...editedProduct, price: text })
             }
             style={styles.input}
           />
 
-          {/* Custom Category Picker */}
+          {/* Category Picker */}
           <TouchableOpacity
             style={styles.input}
             onPress={() => setCategoryModalVisible(true)}
           >
             <Text style={styles.inputText}>
-              {newProduct.category ? newProduct.category : "Select Category"}
+              {editedProduct.category
+                ? editedProduct.category
+                : "Select Category"}
             </Text>
           </TouchableOpacity>
 
@@ -103,8 +110,8 @@ const AddProductModal = ({ visible, onClose, onSave }) => {
                   <TouchableOpacity
                     key={category.value}
                     onPress={() => {
-                      setNewProduct({
-                        ...newProduct,
+                      setEditedProduct({
+                        ...editedProduct,
                         category: category.value,
                       });
                       setCategoryModalVisible(false);
@@ -126,18 +133,18 @@ const AddProductModal = ({ visible, onClose, onSave }) => {
 
           <TextInput
             placeholder="Description"
-            value={newProduct.description}
+            value={editedProduct.description}
             onChangeText={(text) =>
-              setNewProduct({ ...newProduct, description: text })
+              setEditedProduct({ ...editedProduct, description: text })
             }
             style={styles.input}
             multiline={true}
           />
           <TextInput
             placeholder="Image URL"
-            value={newProduct.image}
+            value={editedProduct.image}
             onChangeText={(text) =>
-              setNewProduct({ ...newProduct, image: text })
+              setEditedProduct({ ...editedProduct, image: text })
             }
             style={styles.input}
           />
@@ -221,4 +228,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AddProductModal;
+export default EditProductModal;
