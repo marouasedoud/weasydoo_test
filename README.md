@@ -53,7 +53,7 @@ Here’s how to proceed:
    ```bash
    npx expo start
    ```
-5. Press the “s” key on the keyboard to open the project in the emulator.
+5. Press the “s” key on the keyboard.
 6. Open the downloaded APK, then enter the displayed `exp://192.168.x.x:8081` in the input field.
 
 > **Note:** The app looks better in bright mode.
